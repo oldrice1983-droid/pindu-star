@@ -90,8 +90,18 @@ jobs:
             CODE_SIGNING_ALLOWED="$CODE_SIGNING_ALLOWED" \
             CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
             IPHONEOS_DEPLOYMENT_TARGET="$IPHONEOS_DEPLOYMENT_TARGET" \
-            -quiet
-          test -d build/App.xcarchive
+            CODE_SIGNING_INJECT_BASE_ENTITLEMENTS=NO \
+            | tee build.log
+          if [ ! -d build/App.xcarchive ]; then
+            echo "=========================================="
+            echo "ARCHIVE FAILED. Last 60 lines of build log:"
+            echo "=========================================="
+            tail -60 build.log
+            echo "=========================================="
+            echo "Errors only:"
+            grep -nE "error:|error " build.log | head -40 || true
+            exit 1
+          fi
           echo "ARCHIVE OK"
 
       - name: 从 Archive 提取 IPA
