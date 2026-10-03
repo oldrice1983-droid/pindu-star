@@ -101,7 +101,7 @@
         '<div class="pd-hint">数据仅保存在本机浏览器，不上传任何服务器。<br>' +
         '请<b>固定用同一网址</b>、<b>同一种方式</b>打开（Safari 或主屏幕图标，二选一）；换网址或换打开方式 = 两套独立数据。<br>' +
         '若注册过的账号不见了：多半开了无痕模式、清理过浏览器数据、或换了网址。可点下方「用备份码恢复」找回；平时登录后建议先导出一份备份码。</div>' +
-        '<button id="pdBakLink" type="button" style="display:block;background:none;border:none;color:#2f9e6e;font-size:12.5px;font-weight:600;text-decoration:underline;margin:2px auto 0;cursor:pointer">🧳 用备份码恢复数据</button>' +
+        '<button id="pdBakLink" type="button" style="display:block;background:#eef5f1;border:1px solid #d8e3dd;border-radius:10px;color:#2f9e6e;font-size:13px;font-weight:600;padding:12px 14px;margin:10px auto 0;cursor:pointer;min-height:44px;width:100%;box-sizing:border-box">🧳 用备份码恢复数据</button>' +
       '</div>';
     document.body.appendChild(o);
 

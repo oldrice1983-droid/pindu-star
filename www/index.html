@@ -516,7 +516,7 @@
   .vc-cond{font-size:12.5px; color:var(--ink); line-height:1.45;}
   .vc-exw{font-size:11.5px; color:var(--sub); margin-top:1px; cursor:pointer;}
   .vc-exw:hover{color:var(--green); text-decoration:underline dotted;}
-  .vc-freq{display:inline-block; font-size:10.5px; border-radius:6px; padding:0 6px; margin-right:5px; vertical-align:1px;}
+  .vc-freq{display:inline-block; font-size:12px; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:1px;}
   .vc-freq.hi{background:#e2f5ec; color:#0a8f5b;}
   .vc-freq.mid{background:#fff3d6; color:#a8720a;}
   .vc-freq.low{background:#f0f0f2; color:#777;}
@@ -536,6 +536,13 @@
   /* ===== 手机适配（iOS Safari / 添加到主屏幕） ===== */
   header{padding-top:calc(14px + env(safe-area-inset-top));}
   @media (max-width:640px){
+    /* iPhone 触控：Apple HIG 建议 ≥44px。主按钮够大手指好点，行内小喇叭不低于 38px */
+    .btn{min-height:46px; padding-top:12px; padding-bottom:12px; box-sizing:border-box;}
+    .p-en .btn, .ri-n .btn, .art-tools .btn{min-height:38px; padding-top:7px; padding-bottom:7px;}
+    .judge .btn{min-height:52px; font-size:16px;}
+    nav button{min-height:44px;}
+    .rules-tabs button, .quiz-modes button{min-height:44px;}
+    .seg button{min-height:40px; padding-top:10px; padding-bottom:10px; font-size:13.5px;}
     /* 弱读规则表：4 列 flex 在窄屏挤成竖排字 → 改上下堆叠（须位于基础 .rd-row 规则之后才能覆盖） */
     .rd-row{display:grid; grid-template-columns:1fr auto; gap:3px 10px; padding:11px 12px;}
     .rd-row .rd-a{min-width:0; grid-row:1; grid-column:1;}
@@ -5903,7 +5910,15 @@ function updateQuizRangeInfo(){
     let label, n;
     if(quizRange==="day"){ label="今日"; n=quizWordsForRange().length; }
     else { const r=rangeKeys(quizRange); label=r.label; n=quizWordsForRange().length; }
+    const needLearn = n === 0;
     base=`${label} 共学到 <b>${n}</b> 个单词，将从中随机抽取出题（最多 10 题）。`;
+    if(needLearn){
+      base+=`<div class="quiz-fresh-tip">还没有 ${label} 的学习记录：先去「学单词」打卡，或直接做 🎲 分级随机测试练手。
+        <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-main" style="padding:8px 16px;font-size:13px" onclick="document.querySelector('nav button[data-tab=learn]').click()">📖 去学单词</button>
+          <button class="btn btn-ghost" style="padding:8px 16px;font-size:13px" onclick="setQuizRange('random')">🎲 改做随机测试</button>
+        </div></div>`;
+    }
   }
   if(quiz && typeof quiz.fresh==="number" && !quiz.review){
     base+=`<div class="quiz-fresh-tip">🎯 本轮 ${quiz.qs.length} 题中有 <b>${quiz.fresh}</b> 道是你没做过的新题。</div>`;
@@ -6566,12 +6581,25 @@ function renderVocab(){
 }
 
 /* ================= 页面切换 ================= */
+/* 记住上次所在的模块：重新打开/登录后直接回到原来在用的 tab（更接近 App 的续学体验） */
+const TKEY="phonics_lasttab_v1";
 let tab="rules";
+try{
+  const saved=localStorage.getItem(TKEY);
+  if(saved && ["learn","rules","read","quiz"].includes(saved)){
+    tab=saved;
+    document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+    const b=document.querySelector('nav button[data-tab="'+saved+'"]');
+    if(b) b.classList.add("active");
+  }
+}catch(e){}
 document.querySelectorAll("nav button").forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
-    tab=b.dataset.tab; render();
+    tab=b.dataset.tab;
+    try{ localStorage.setItem(TKEY, tab); }catch(e){}
+    render();
   };
 });
 function render(){
