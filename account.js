@@ -102,8 +102,12 @@
     }
   }
   function wrapSaves() {
+    // 具名 save 函数（改动后立即触发云端同步）
     ["saveProgress","saveCheckin","saveLearnLog","saveNote","saveQuizUsed",
      "saveAutoProg","saveAffixProg","saveRuleProg","saveSettings"].forEach(wrap);
+    // 内联 localStorage 写入的关键函数（每日计划 / 单词测验数据），同样触发同步
+    if (typeof window.getDaily === "function") wrap("getDaily");
+    if (typeof window.wqNext === "function") wrap("wqNext");
     capture("resetProgress");
     var oReset = originals.resetProgress;
     if (typeof oReset === "function") {
