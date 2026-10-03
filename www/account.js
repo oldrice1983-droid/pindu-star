@@ -57,7 +57,8 @@
     ".pd-go{width:100%;border:0;background:#2f9e6e;color:#fff;font-size:15px;font-weight:700;padding:12px 0;border-radius:11px;cursor:pointer;margin-top:4px}" +
     ".pd-go:active{background:#26835c}" +
     ".pd-err{color:#c0392b;font-size:12.5px;min-height:18px;margin:8px 2px 0;text-align:center}" +
-    ".pd-hint{font-size:11.5px;color:#9aa8a0;text-align:center;margin-top:10px;line-height:1.5}" +
+    ".pd-hint{font-size:11.5px;color:#9aa8a0;text-align:center;margin-top:10px;line-height:1.6}" +
+    ".pd-ta{width:100%;box-sizing:border-box;height:110px;padding:9px 10px;border:1.5px solid #d8e3dd;border-radius:10px;font-size:11px;font-family:monospace;word-break:break-all;resize:none;outline:none;margin-bottom:8px}" +
     ".pd-switch{margin-top:14px;border-top:1px dashed #e2eae5;padding-top:12px}" +
     ".pd-switch .pd-st{font-size:12px;color:#7a8a82;margin-bottom:7px}" +
     ".pd-acc{display:flex;flex-wrap:wrap;gap:7px}" +
@@ -97,13 +98,17 @@
         '<button id="pdGo" class="pd-go" type="button">登录</button>' +
         '<div id="pdErr" class="pd-err"></div>' +
         '<div id="pdSwitch" class="pd-switch"></div>' +
-        '<div class="pd-hint">数据仅保存在本机浏览器，不上传任何服务器。<br>请固定用同一种方式打开本页（Safari 或主屏幕图标，二选一），<br>两者数据互相独立；清理浏览器数据会丢失进度。</div>' +
+        '<div class="pd-hint">数据仅保存在本机浏览器，不上传任何服务器。<br>' +
+        '请<b>固定用同一网址</b>、<b>同一种方式</b>打开（Safari 或主屏幕图标，二选一）；换网址或换打开方式 = 两套独立数据。<br>' +
+        '若注册过的账号不见了：多半开了无痕模式、清理过浏览器数据、或换了网址。可点下方「用备份码恢复」找回；平时登录后建议先导出一份备份码。</div>' +
+        '<button id="pdBakLink" type="button" style="display:block;background:none;border:none;color:#2f9e6e;font-size:12.5px;font-weight:600;text-decoration:underline;margin:2px auto 0;cursor:pointer">🧳 用备份码恢复数据</button>' +
       '</div>';
     document.body.appendChild(o);
 
     document.getElementById("pdTabLogin").onclick = function () { setMode("login"); };
     document.getElementById("pdTabReg").onclick = function () { setMode("reg"); };
     document.getElementById("pdGo").onclick = submit;
+    document.getElementById("pdBakLink").onclick = function () { showBackupPanel(); };
     document.getElementById("pdPw").addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
     document.getElementById("pdUser").addEventListener("keydown", function (e) { if (e.key === "Enter") document.getElementById("pdPw").focus(); });
     renderSwitch();
@@ -177,6 +182,7 @@
       '<button class="pd-bar-btn" id="pdBarBtn" type="button">👤 ' + esc(user) + ' ▾</button>' +
       '<div class="pd-menu" id="pdMenu">' +
         '<button type="button" id="pdDataBtn">📊 学习数据</button>' +
+        '<button type="button" id="pdBackupBtn">🧳 备份 / 恢复数据</button>' +
         '<button type="button" id="pdSwitchBtn">🔄 切换账号</button>' +
         '<button type="button" id="pdLogoutBtn">🚪 退出登录</button>' +
       '</div>';
@@ -190,6 +196,7 @@
     document.getElementById("pdLogoutBtn").onclick = function () { setCur(null); location.reload(); };
     document.getElementById("pdSwitchBtn").onclick = function () { setCur(null); location.reload(); };
     document.getElementById("pdDataBtn").onclick = function () { menu.style.display = "none"; showDataPanel(user); };
+    document.getElementById("pdBackupBtn").onclick = function () { menu.style.display = "none"; showBackupPanel(); };
     document.addEventListener("click", function (e) {
       if (!bar.contains(e.target)) menu.style.display = "none";
     });
@@ -229,6 +236,90 @@
       '</div>';
     document.body.appendChild(mask);
     document.getElementById("pdDataClose").onclick = function () { mask.parentNode.removeChild(mask); };
+    mask.addEventListener("click", function (e) { if (e.target === mask) mask.parentNode.removeChild(mask); });
+  }
+
+  /* ---------- 备份 / 恢复：把全部账号+学习数据导出为一段备份码，数据丢失后可导入找回 ----------
+     说明：账号注册表(pd_sys_accounts)与每个账号的数据(pd_u_<账号>_*)都存在同一份本机存储里，
+     存储被清（无痕模式/清理数据）或换网址后全部消失。备份码让用户能手动带走这份数据。 */
+  function rawKeys() {
+    var R = window.__pdRaw, out = [];
+    if (!R) return out;
+    try { for (var i = 0; i < R.length; i++) out.push(R.key(i)); } catch (e) {}
+    return out;
+  }
+  function b64e(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function b64d(s) { return decodeURIComponent(escape(atob(String(s).trim()))); }
+  function makeBackupCode() {
+    var acc = accounts();
+    var data = {};
+    Object.keys(acc).forEach(function (u) {
+      var pre = "pd_u_" + u + "_", o = {};
+      rawKeys().forEach(function (k) {
+        if (k && k.indexOf(pre) === 0) {
+          try { o[k.slice(pre.length)] = window.__pdRaw.getItem(k); } catch (e) {}
+        }
+      });
+      data[u] = o;
+    });
+    return b64e(JSON.stringify({ app: "pindu-star", v: 1, ts: new Date().toISOString(), accounts: acc, data: data }));
+  }
+  function applyBackupCode(code) {
+    var j = JSON.parse(b64d(code));
+    if (!j || !j.accounts || typeof j.accounts !== "object") throw new Error("备份码格式不正确");
+    var acc = accounts(), names = Object.keys(j.accounts);
+    names.forEach(function (u) { acc[u] = j.accounts[u]; });
+    saveAccounts(acc);
+    Object.keys(j.data || {}).forEach(function (u) {
+      var pre = "pd_u_" + u + "_", o = j.data[u] || {};
+      Object.keys(o).forEach(function (k) {
+        try { window.__pdRaw.setItem(pre + k, o[k]); } catch (e) {}
+      });
+    });
+    return names;
+  }
+  function showBackupPanel() {
+    var old = document.getElementById("pdBakMask");
+    if (old) old.parentNode.removeChild(old);
+    var acc = accounts(), n = Object.keys(acc).length;
+    var mask = document.createElement("div");
+    mask.id = "pdBakMask";
+    mask.className = "pd-mask";
+    mask.style.background = "rgba(20,38,30,.72)";
+    mask.innerHTML =
+      '<div class="pd-card">' +
+        '<div class="pd-logo">🧳 备份 / 恢复数据</div>' +
+        '<div class="pd-sub">本机共 ' + n + ' 个账号 · 备份码包含全部账号与学习数据</div>' +
+        '<textarea id="pdBakTa" class="pd-ta" placeholder="点「生成备份码」后，全选复制这段文字保存好（发微信给自己/家人即可）。恢复时把备份码粘贴到这里，点「导入并恢复」。"></textarea>' +
+        '<div id="pdBakMsg" class="pd-err" style="min-height:16px"></div>' +
+        '<button class="pd-go" type="button" id="pdBakGen">📤 生成备份码</button>' +
+        '<button class="pd-go" type="button" id="pdBakCopy" style="background:#4a9d78;margin-top:8px">📋 复制备份码</button>' +
+        '<button class="pd-go" type="button" id="pdBakImp" style="background:#e8a13d;margin-top:8px">📥 导入并恢复</button>' +
+        '<button class="pd-go" type="button" id="pdBakClose" style="background:#8aa398;margin-top:8px">关闭</button>' +
+      '</div>';
+    document.body.appendChild(mask);
+    var ta = document.getElementById("pdBakTa"), msg = document.getElementById("pdBakMsg");
+    document.getElementById("pdBakGen").onclick = function () {
+      try { ta.value = makeBackupCode(); msg.style.color = "#1f8a5a"; msg.textContent = "备份码已生成，请复制并妥善保存（含密码哈希，勿发给陌生人）。"; }
+      catch (e) { msg.style.color = "#c0392b"; msg.textContent = "生成失败：" + e.message; }
+    };
+    document.getElementById("pdBakCopy").onclick = function () {
+      if (!ta.value) { msg.style.color = "#c0392b"; msg.textContent = "请先生成备份码"; return; }
+      var done = function () { msg.style.color = "#1f8a5a"; msg.textContent = "已复制，请粘贴保存（微信发给自己最方便）。"; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ta.value).then(done, function () { ta.select(); document.execCommand("copy"); done(); });
+      } else { ta.select(); try { document.execCommand("copy"); } catch (e) {} done(); }
+    };
+    document.getElementById("pdBakImp").onclick = function () {
+      if (!ta.value.trim()) { msg.style.color = "#c0392b"; msg.textContent = "请先把备份码粘贴到上面的输入框"; return; }
+      try {
+        var names = applyBackupCode(ta.value);
+        msg.style.color = "#1f8a5a";
+        msg.textContent = "已恢复 " + names.length + " 个账号（" + names.join("、") + "），页面即将刷新…";
+        setTimeout(function () { location.reload(); }, 900);
+      } catch (e) { msg.style.color = "#c0392b"; msg.textContent = "恢复失败：" + (e.message || "备份码不完整"); }
+    };
+    document.getElementById("pdBakClose").onclick = function () { mask.parentNode.removeChild(mask); };
     mask.addEventListener("click", function (e) { if (e.target === mask) mask.parentNode.removeChild(mask); });
   }
 

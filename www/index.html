@@ -795,6 +795,7 @@
     /* localStorage 属性本身被禁（部分浏览器的「阻止所有 Cookie」会直接抛异常） */
     window.__pdStorageWarn("浏览器禁用了本地存储");
   }else{
+    window.__pdRaw = RAW;   /* 原始存储句柄：备份/恢复需要跨账号读写 pd_u_* 键 */
     try{
       Object.defineProperty(window,"localStorage",{value:SHIM,configurable:true,writable:false});
     }catch(e){ /* 旧浏览器不支持重定义时退化为共享存储（注册仍可用） */ }
@@ -5160,7 +5161,7 @@ function renderRules(){
   /* vcard 渲染：元音 / 辅音分区共用（结构同 VOWELS：n + sounds[[ip,cond,ex]]） */
   const vcards=keys=>keys.map(k=>{
       const d=VOWELS[k]; if(!d) return "";
-      return `<div class="vcard" data-v="${k}">
+      return `<div class="vcard">
         <div><span class="vc-k">${k.replace(/_/g,"·")}</span><span class="vc-n">${d.n}</span></div>
         <div class="vc-map">${d.sounds.map(s=>{
           const exWord=(s[2].split(" · ")[0]||"").replace(/[^a-zA-Z]/g,"").toLowerCase();
@@ -5177,7 +5178,7 @@ function renderRules(){
     }).join("");
   if(rulesTab==="vowel"){
     c.innerHTML=tabs+`
-      <div class="hint">💡 每张卡片直接标出：<b>什么情况下 → 发什么音</b>（含常见度标签）；例词<b>可点击听读音</b>；鼠标悬停卡片还可查看完整规则口诀。</div>
+      <div class="hint">💡 每张卡片直接标出：<b>什么情况下 → 发什么音</b>（含常见度标签）；例词<b>可点击听读音</b>。</div>
       ${VOWEL_GROUPS.map(([title,keys])=>`
         <div class="grp-title">${title}</div>
         <div class="vgrid">${vcards(keys)}</div>`).join("")}`;
