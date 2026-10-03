@@ -56,13 +56,20 @@ if not "%RC%"=="0" (
   echo.
   echo   Read the message just above - it names the cause:
   echo.
+  echo   refusing to allow a Personal Access Token to update
+  echo     .github/workflows without 'workflow' scope
+  echo     -> your token is missing the workflow permission.
+  echo        Make a NEW token and tick BOTH boxes:
+  echo          [x] repo
+  echo          [x] workflow      <- this one is easy to miss
+  echo        Open: https://github.com/settings/tokens/new
+  echo.
   echo   repository not found  /  could not read from remote
   echo     -> the repo must be Public and named exactly pindu-star
   echo        Check: https://github.com/oldrice1983-droid/pindu-star
-  echo        Use Settings to change Visibility to Public.
   echo.
   echo   Authentication failed  /  403
-  echo     -> wrong token. Make a new one with the repo box ticked.
+  echo     -> wrong or expired token, or repo box not ticked.
   echo.
   echo   failed to push some refs
   echo     -> remote already has commits. Run FORCE-push.bat instead.
