@@ -80,45 +80,49 @@ jobs:
         run: |
           set -e
           xcodebuild -version
+          set -o pipefail
           xcodebuild \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath build/App.xcarchive \
+            -derivedDataPath build/DD \
             CODE_SIGNING_REQUIRED="$CODE_SIGNING_REQUIRED" \
             CODE_SIGNING_ALLOWED="$CODE_SIGNING_ALLOWED" \
             CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
             IPHONEOS_DEPLOYMENT_TARGET="$IPHONEOS_DEPLOYMENT_TARGET" \
             CODE_SIGNING_INJECT_BASE_ENTITLEMENTS=NO \
-            | tee build.log
-          if [ ! -d build/App.xcarchive ]; then
+            build | tee build.log
+          set +o pipefail
+          APP_DIR="build/DD/Build/Products/Release-iphoneos"
+          if [ ! -d "$APP_DIR/App.app" ]; then
             echo "=========================================="
-            echo "ARCHIVE FAILED. Last 60 lines of build log:"
+            echo "BUILD FAILED. Errors:"
             echo "=========================================="
-            tail -60 build.log
-            echo "=========================================="
-            echo "Errors only:"
-            grep -nE "error:|error " build.log | head -40 || true
+            grep -nE "error:" build.log | head -30 || true
+            echo "--- last 40 lines ---"
+            tail -40 build.log
+            echo "--- products dir ---"
+            ls -R "$APP_DIR" 2>/dev/null || echo "products dir missing"
             exit 1
           fi
-          echo "ARCHIVE OK"
+          echo "BUILD OK - App.app produced"
 
       - name: 从 Archive 提取 IPA
         run: |
           set -e
-          mkdir -p build/Payload
-          APP_PATH=$(find build/App.xcarchive/Products/Applications -maxdepth 1 -name "*.app" | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "ERROR: no .app inside the archive"
-            ls -R build/App.xcarchive/Products || true
-            exit 1
-          fi
-          cp -R "$APP_PATH" build/Payload/
-          cd build
-          zip -qry pindu-star-unsigned.ipa Payload
+          APP_DIR="build/DD/Build/Products/Release-iphoneos"
+          mkdir -p build/ipa/Payload
+          cp -R "$APP_DIR/App.app" build/ipa/Payload/
+          # 确认音频资源已打进 App
+          echo "mp3 inside app:"
+          find build/ipa/Payload/App.app -name "*.mp3" | wc -l
+          cd build/ipa
+          zip -qry ../pindu-star-unsigned.ipa Payload
+          cd ..
           echo "--- artifact ---"
           ls -lh pindu-star-unsigned.ipa
+          unzip -l pindu-star-unsigned.ipa | tail -3
 
       - name: 上传 IPA 供下载
         uses: actions/upload-artifact@v4

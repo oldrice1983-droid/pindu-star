@@ -28,3 +28,7 @@ Thumbs.db
 *.p12
 *.cer
 *.key
+
+# 编译日志与产物
+build.log
+build/
