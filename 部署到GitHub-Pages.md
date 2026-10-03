@@ -1,12 +1,10 @@
-# 部署到 GitHub Pages · 一步开通永久网址
+# 部署到 GitHub Pages · 一次推送，永久网址
 
-完成后你会在任何地方、任何网络用 iPhone 打开这个 App，不用开电脑。
+完成后你在任何地方、任何网络用 iPhone 打开这个 App，**不用开电脑**。
 
 ---
 
-## 你需要做的（3 分钟，网页上点几下）
-
-### 第 1 步 · 推���代码
+## 第 1 步 · 推送代码（唯一需要你操作的电脑动作）
 
 双击：
 
@@ -14,115 +12,110 @@
 C:\Users\fm520\WorkBuddy\2026-10-01-01-17-06\english-phonics\ios-pack\GO-push.bat
 ```
 
-（凭据已缓存，应该直接推完）
+凭据已缓存，应该几秒推完。
 
 ---
 
-### 第 2 步 · 开启 Pages
+## 第 2 步 · 开启 Pages（网页上点两下）
 
-1. 打开 https://github.com/oldrice1983-droid/pindu-star/settings/pages
-   （或：进仓库 → 顶栏 **Settings** → 左侧 **Pages**）
+打开：**https://github.com/oldrice1983-droid/pindu-star/settings/pages**
 
-2. 在 **Build and deployment** 区域：
+在 **Build and deployment** 区域：
 
 | 字段 | 选什么 |
 |---|---|
 | Source | **Deploy from a branch** |
 | Branch | **main** |
-| Folder | **/ (root)** ← 重要，选根目录 |
+| Folder | **/ (root)** |
 
-   > ⚠️ Folder 必须选 `/ (root)`，不要选 `/docs`。
-   > 网页文件在 `www/` 目录下，所以还要做第 3 步。
+点 **Save**
 
-3. 点 **Save**
-
----
-
-### 第 3 步 · 让根目录指向 www
-
-因为文件在 `www/` 子目录里，Pages 默认会从根目录找 `index.html`，找不到。
-
-**两个解决办法，任选一个：**
-
-**办法 A（简单，推荐）** —— 每次推送时自动把 www 内容复制到根目录
-
-我已准备好一个脚本，等你推送后运行即可。
-
-**办法 B（更规范）** —— 改用 `/docs` 方式
-
-把 `www/` 里的内容复制一份到仓库根目录的 `docs/` 文件夹。
+> Folder 必须是 `/ (root)`，别选 `/docs`。
 
 ---
 
-### 第 4 步 · 拿到网址
+## 第 3 步 · 推一次就自动发布
 
-开启后 **1–3 分钟**，页面顶部会出现：
+再双击一次 `GO-push.bat`（或者上一步推送时它已经触发了）。
+
+工作流名：**「发布到 GitHub Pages」**
+
+它会自动把 `www/` 目录发布出去。等 **2–4 分钟**（38MB 音频要上传）。
+
+---
+
+## 第 4 步 · 拿到网址
+
+回到 **Settings → Pages**，页面顶部会出现：
 
 ```
 Your site is live at
 https://oldrice1983-droid.github.io/pindu-star/
 ```
 
-**这个网址就是永久地址**，全球任何网络都能访问。
+**这个网址就是永久地址**，全球任何网络都能开。
 
 ---
 
-### 第 5 步 · 在 iPhone 上装
+## 第 5 步 · iPhone 上装
 
 1. 用 **Safari** 打开那个网址（⚠️ 必须 Safari，Chrome 不行）
-2. 点底部**分享**按钮 → **添加到主屏幕**
+2. 点底部**分享** → **添加到主屏幕**
 3. 桌面上出现「🌱 拼读星球」图标
 
-**从此随时可用**，不需要电脑、不需要证书、不需要每周续签。
+**从此随时可用** —— 不开电脑、不要证书、不用每周续签。
 
 ---
 
-## 关于隐私（重要）
+## 以后改了内容怎么办
+
+```bash
+# 改完 www/ 里的文件后
+cd english-phonics/ios-pack
+git add -A
+git commit -m "更新内容"
+git push
+```
+
+推送后工作流自动重新发布，**网址不变**，iPhone 刷新即可。
+
+---
+
+## 隐私说明
 
 | 问题 | 答案 |
 |---|---|
 | 学习记录会上传吗？ | **不会**。答题记录存手机 localStorage，GitHub 只托管静态文件 |
-| App 会联网吗？ | 只在打开页面时下载文件，之后读本地缓存 |
-| 源码公开吗？ | 是（你在 GitHub 上已确认这不涉密） |
+| App 运行时会联网吗？ | 首次打开下载文件，之后走本地缓存 |
+| 源码公开吗？ | 是。你已确认拼读星球不涉密，这条红线不适用它 |
 
 ---
 
-## 相比局域网方式的改进
+## 可能的问题
 
-| | 局域网（现在） | Pages（本方案） |
-|---|---|---|
-| 需要电脑开着 | ✅ 必须 | ❌ 不需要 |
-| 位置限制 | 只能在同一个 WiFi | 任何地方 |
-| 首次加载速度 | 快（本地） | 慢一点（要下载音频） |
-| 之后使用 | 快 | 快（浏览器缓存） |
-
----
-
-## 可能遇到的问题
-
-**页面打开是 404**
-→ Folder 选错了。回到第 2 步，改成 `/ (root)`，或做第 3 步。
+**Pages 一直显示 "Your site is live" 但打开 404**
+→ 去看 **Actions** 里「发布到 GitHub Pages」是否成功。如果是第一次没触发，去 Actions 页面点 **Run workflow** 手动跑一次。
 
 **页面打开但没声音**
-→ 音频文件还在上传中。GitHub 一次提交 38MB 需要几分钟，等一会儿刷新。
+→ 音频还在上传。等几分钟刷新页面。
 
-**iPhone 上"添加到主屏幕"是灰的**
-→ 必须用 **Safari** 打开。Chrome、微信内置浏览器都不支持。
+**iPhone 上「添加到主屏幕」是灰的**
+→ 必须用 **Safari**。Chrome、微信内置浏览器都不支持。
 
-**想要离线用**
-→ 打开一次让它加载完，之后断网也能用（Service Worker 已内置）。
+**想离线用**
+→ 打开一次让它完整加载，之后断网也能用（Service Worker 已内置）。
 
 ---
 
-## 备选：不用 GitHub Pages 的话
+## 备选方案：Cloudflare Tunnel（文件不过第三方）
 
-如果你不想公开源码，也可以用 **Cloudflare Tunnel**：
+如果你不想公开源码，可以让电脑开个隧道：
 
 ```bash
-# 电脑上跑（需装 cloudflared）
+# 需先装 cloudflared：https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
 cloudflared tunnel --url http://localhost:8123
 ```
 
-它会给你一个临时公网网址，**文件不经过任何第三方服务器**。
+它会给一个临时公网网址，**文件不经过任何第三方服务器**。
 
-但代价是：**电脑必须开着**，人不在家就断。
+代价：**电脑必须开着**，人不在家就断。

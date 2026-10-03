@@ -1,0 +1,17 @@
+{
+  "name": "拼读星球 · 英语自然拼读",
+  "short_name": "拼读星球",
+  "description": "英语自然拼读离线学习工具（本地零上传）",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7f5",
+  "theme_color": "#00995a",
+  "icons": [
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "icons/icon-167.png", "sizes": "167x167", "type": "image/png" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
