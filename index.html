@@ -438,7 +438,6 @@
   #vTip .vt-w:hover{color:#fff; background:#245c44;}
   #vTip .vt-h{display:flex; align-items:center; gap:8px; border-bottom:1px solid #2b6250; padding-bottom:7px; margin-bottom:8px;}
   #vTip .vt-h b{font-size:20px; color:#7dffc0; font-family:"Segoe UI",Arial;}
-  #vTip .vt-h .vt-t{font-size:11px; background:#245c44; color:#bfe8d3; padding:2px 8px; border-radius:8px;}
   #vTip .vt-row{margin-bottom:7px;}
   #vTip .vt-ip{font-family:"Segoe UI",Arial; font-size:16px; font-weight:700; color:#ffd479;}
   #vTip .vt-cond{display:block; color:#cfe3da; font-size:12px;}
@@ -494,8 +493,8 @@
   }
   .rt-s{display:none;}
   @media (max-width:640px){
-    /* 手机：6 个等宽短标签全部可见，不滑动 */
-    .rules-tabs{display:grid; grid-template-columns:repeat(6,1fr); gap:3px; overflow:visible;}
+    /* 手机：7 个等宽短标签全部可见，不滑动 */
+    .rules-tabs{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; overflow:visible;}
     .rules-tabs button{padding:9px 2px; text-align:center; font-size:13px; white-space:normal;}
     .rules-tabs button.on{box-shadow:0 1px 3px rgba(30,60,45,.22);}
     .rt-l{display:none;}
@@ -768,20 +767,44 @@
 <!-- 账号命名空间 shim：必须在主脚本之前执行，使每个账号的 localStorage 数据完全隔离 -->
 <script>
 (function(){
-  try{
-    var RAW=window.localStorage, SYS="pd_sys_";
-    function cur(){ try{ return RAW.getItem(SYS+"cur"); }catch(e){ return null; } }
-    function ns(){ var u=cur(); return u?("pd_u_"+u+"_"):"pd_g_"; }
-    var SHIM={
-      getItem:function(k){ try{ return RAW.getItem(k.indexOf(SYS)===0?k:ns()+k); }catch(e){ return null; } },
-      setItem:function(k,v){ try{ return RAW.setItem(k.indexOf(SYS)===0?k:ns()+k, v); }catch(e){} },
-      removeItem:function(k){ try{ return RAW.removeItem(k.indexOf(SYS)===0?k:ns()+k); }catch(e){} },
-      clear:function(){ try{ var d=[]; for(var i=0;i<RAW.length;i++){ var k=RAW.key(i); if(k&&k.indexOf(ns())===0) d.push(k); } d.forEach(function(k){ RAW.removeItem(k); }); }catch(e){} },
-      key:function(i){ var n=0; for(var j=0;j<RAW.length;j++){ var k=RAW.key(j); if(k&&(k.indexOf(ns())===0||k.indexOf(SYS)===0)){ if(n===i) return k.indexOf(ns())===0?k.slice(ns().length):k; n++; } } return null; },
-      get length(){ var n=0; for(var j=0;j<RAW.length;j++){ var k=RAW.key(j); if(k&&(k.indexOf(ns())===0||k.indexOf(SYS)===0)) n++; } return n; }
-    };
-    Object.defineProperty(window,"localStorage",{value:SHIM,configurable:true,writable:false});
-  }catch(e){ /* 旧浏览器不支持重定义时退化为共享存储（注册仍可用） */ }
+  var RAW=null, SYS="pd_sys_";
+  try{ RAW=window.localStorage; }catch(e){ RAW=null; }
+  function cur(){ try{ return RAW.getItem(SYS+"cur"); }catch(e){ return null; } }
+  function ns(){ var u=cur(); return u?("pd_u_"+u+"_"):"pd_g_"; }
+  /* 存储失败警示：绝不允许静默丢数据（无痕模式 / 阻止所有 Cookie / 配额满时能立刻看见） */
+  window.__pdStorageWarn=function(reason){
+    if(window.__pdStorageWarned) return; window.__pdStorageWarned=true;
+    var b=document.createElement("div");
+    b.id="pdStoreWarn";
+    b.style.cssText="position:fixed;left:10px;right:10px;bottom:12px;z-index:9998;background:#c0392b;color:#fff;font-size:13px;line-height:1.7;padding:12px 15px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.35)";
+    b.innerHTML="⚠️ <b>进度无法保存！</b>当前浏览器禁止了本地存储（"+reason+"）。<br>" +
+      "解决方法：退出无痕/隐私浏览；在 设置 → Safari（或所用浏览器）→ 关闭「阻止所有 Cookie」；" +
+      "若刚清理过浏览器数据，需重新登录。";
+    var t=document.body||document.documentElement;
+    t.appendChild(b);
+  };
+  var SHIM={
+    getItem:function(k){ try{ return RAW.getItem(k.indexOf(SYS)===0?k:ns()+k); }catch(e){ return null; } },
+    setItem:function(k,v){ try{ return RAW.setItem(k.indexOf(SYS)===0?k:ns()+k, v); }catch(e){ window.__pdStorageWarn("写入失败，可能开启了无痕模式或阻止了 Cookie"); } },
+    removeItem:function(k){ try{ return RAW.removeItem(k.indexOf(SYS)===0?k:ns()+k); }catch(e){} },
+    clear:function(){ try{ var d=[]; for(var i=0;i<RAW.length;i++){ var k=RAW.key(i); if(k&&k.indexOf(ns())===0) d.push(k); } d.forEach(function(k){ RAW.removeItem(k); }); }catch(e){} },
+    key:function(i){ var n=0; for(var j=0;j<RAW.length;j++){ var k=RAW.key(j); if(k&&(k.indexOf(ns())===0||k.indexOf(SYS)===0)){ if(n===i) return k.indexOf(ns())===0?k.slice(ns().length):k; n++; } } return null; },
+    get length(){ var n=0; for(var j=0;j<RAW.length;j++){ var k=RAW.key(j); if(k&&(k.indexOf(ns())===0||k.indexOf(SYS)===0)) n++; } return n; }
+  };
+  if(!RAW){
+    /* localStorage 属性本身被禁（部分浏览器的「阻止所有 Cookie」会直接抛异常） */
+    window.__pdStorageWarn("浏览器禁用了本地存储");
+  }else{
+    try{
+      Object.defineProperty(window,"localStorage",{value:SHIM,configurable:true,writable:false});
+    }catch(e){ /* 旧浏览器不支持重定义时退化为共享存储（注册仍可用） */ }
+    /* 启动自检：写入→读回→删除，任一步失败立即横幅提示 */
+    try{
+      RAW.setItem("pd_probe","1");
+      if(RAW.getItem("pd_probe")!=="1") throw new Error("readback");
+      RAW.removeItem("pd_probe");
+    }catch(e){ window.__pdStorageWarn("读写自检未通过"); }
+  }
 })();
 </script>
 
@@ -2445,6 +2468,17 @@ const SYLDIV_SPECIAL=[
  {n:"-tion / -sion 前的辅音归后", d:"tion / sion 是一个整体音节块（读 /ʃən/），它前面那个辅音划给它，不向前切。", ex:"na·tion、in·for·ma·tion、vi·sion"},
  {n:"-ious / -uous 等按元音切", d:"以 -ious、-uous 结尾时，按“辅音 + ious”划分，i 之前若有辅音则归后。", ex:"cur·i·ous、con·tin·u·ous"},
  {n:"词尾元音 + y 不切", d:"以 -y 结尾且 y 前是辅音时，y 与前面元音按组合或单独成音节处理，不要从 y 前硬切出无意义块。", ex:"ha·ppy、ba·by、car·ry"}
+];
+
+/* ===== 轻音规则（词内不承担重音的音节怎么读） ===== */
+const LIGHT_RULES=[
+ {n:"① 轻音节元音弱化成 /ə/（schwa）", d:"不承担重音的音节里，a / e / o / u 常读成又轻又短、含糊的 /ə/ —— 这是英语里出现频率最高的音。", ex:"a·bout /əˈbaʊt/ · so·fa /ˈsəʊfə/ · ba·na·na /bəˈnɑːnə/ · sup·port /səˈpɔːt/"},
+ {n:"② 轻音节的 i / e 常弱化为 /ɪ/", d:"非重读的 i、e 多读短促的 /ɪ/，也可弱化为 /ə/；不像重读音节那样读饱满的长音。", ex:"be·gin /bɪˈɡɪn/ · ci·ty /ˈsɪti/ · ben·e·fit /ˈbenɪfɪt/ · want·ed /ˈwɒntɪd/"},
+ {n:"③ 后缀永远轻读", d:"-tion / -ture / -ous / -ful / -ment / -ness / -ly / -able 等后缀不承担重音，元音一律弱化。背单词时后缀直接按弱读音记。", ex:"na·tion /ʃən/ · care·ful /fəl/ · gov·ern·ment /mənt/ · love·ly /li/ · com·fort·a·ble /əbl/"},
+ {n:"④ 前缀通常轻读", d:"a- / be- / con- / de- / re- / su- 等前缀的元音弱读为 /ə/ 或 /ɪ/，重音落在后面的词根上。", ex:"a·way /ə/ · be·come /bɪ/ · con·nect /kən/ · de·cide /dɪ/ · re·mem·ber /rɪ/"},
+ {n:"⑤ 词尾 -le 自成轻音节", d:"辅音 + le 结尾时，le 与前面的辅音组成独立轻音节 /əl/（或成音节 /l̩/），前面的元音照常按重读规则读。", ex:"lit·tle · ap·ple · ta·ble · can·dle · pur·ple"},
+ {n:"⑥ 词尾 -er / -or / -ar 一律读 /ər/", d:"非重读的 er / or / ar 弱化为 /ər/ —— 拼写不同、读音相同。", ex:"teach·er · doc·tor · sug·ar · dol·lar · syl·la·ble"},
+ {n:"⑦ 次重音（ˌ）仍读强式元音，不是轻音", d:"次重音比主重音轻，但比轻音节重得多，元音不弱化。别把次重音和轻音节混为一谈。", ex:"ˌop·por·ˈtu·ni·ty 的 op 仍读 /ɑː/ · ˌun·der·ˈstand 的 un 仍读 /ʌ/"}
 ];
 
 /* ===== 旧词补充重音规则（新词已在数据中直接标注 sRule / stress2） ===== */
@@ -4820,7 +4854,7 @@ function showVTip(key, el){
       const cw=w.replace(/[^A-Za-z'’-]/g,"");
       return `<span class="vt-w" onclick="say('${cw}',0.8)">${w}</span>`;
     }).join(" ");
-  vtip.innerHTML=`<div class="vt-h"><b>${key.replace(/_/g,"·")}</b><span class="vt-t">${d.t}</span>
+  vtip.innerHTML=`<div class="vt-h"><b>${key.replace(/_/g,"·")}</b>
       <span style="font-size:12px;color:#cfe3da">${d.n}</span></div>`
     + d.sounds.map(s=>`<div class="vt-row">
         <span class="vt-ip">${s[0]}</span>
@@ -5106,12 +5140,13 @@ const STEPS_DEMOS=[
 function renderRules(){
   const c=document.getElementById("rulesCard");
   const tabs=`<div class="rules-tabs">
-      <button class="${rulesTab==="vowel"?"on":""}" onclick="setRulesTab('vowel')"><span class="rt-l">🔤 元音发音总表</span><span class="rt-s">元音</span></button>
-      <button class="${rulesTab==="consonant"?"on":""}" onclick="setRulesTab('consonant')"><span class="rt-l">🗣 辅音·特殊组合</span><span class="rt-s">辅音</span></button>
-      <button class="${rulesTab==="stress"?"on":""}" onclick="setRulesTab('stress')"><span class="rt-l">🔺 重音 / 次重音</span><span class="rt-s">重音</span></button>
+      <button class="${rulesTab==="vowel"?"on":""}" onclick="setRulesTab('vowel')"><span class="rt-l">🔤 元音发音</span><span class="rt-s">元音</span></button>
+      <button class="${rulesTab==="consonant"?"on":""}" onclick="setRulesTab('consonant')"><span class="rt-l">🗣 辅音发音</span><span class="rt-s">辅音</span></button>
+      <button class="${rulesTab==="stress"?"on":""}" onclick="setRulesTab('stress')"><span class="rt-l">🔺 重音发音</span><span class="rt-s">重音</span></button>
+      <button class="${rulesTab==="light"?"on":""}" onclick="setRulesTab('light')"><span class="rt-l">🔅 轻音规则</span><span class="rt-s">轻音</span></button>
       <button class="${rulesTab==="reduce"?"on":""}" onclick="setRulesTab('reduce')"><span class="rt-l">🔉 弱读规则</span><span class="rt-s">弱读</span></button>
-      <button class="${rulesTab==="syldiv"?"on":""}" onclick="setRulesTab('syldiv')"><span class="rt-l">✂️ 切分法</span><span class="rt-s">切分法</span></button>
-      <button class="${rulesTab==="steps"?"on":""}" onclick="setRulesTab('steps')"><span class="rt-l">📖 见词能读·三步法</span><span class="rt-s">三步法</span></button>
+      <button class="${rulesTab==="syldiv"?"on":""}" onclick="setRulesTab('syldiv')"><span class="rt-l">✂️ 切分规则</span><span class="rt-s">切分</span></button>
+      <button class="${rulesTab==="steps"?"on":""}" onclick="setRulesTab('steps')"><span class="rt-l">📖 三步法</span><span class="rt-s">三步</span></button>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
       <button class="btn btn-main" style="padding:6px 16px;font-size:13px" onclick="goRulesQuiz()">🧠 测一测这些规则 →</button>
@@ -5192,6 +5227,22 @@ function renderRules(){
         <div class="ri-ex">例：${r.ex}</div>
       </div>`).join("")}
       <div class="st-note" style="margin-top:14px">🎯 练法：遇到长词先在心里切一刀，再逐块拼读。配合「三步法」使用效果最佳。</div>`;
+  }else if(rulesTab==="light"){
+    c.innerHTML=tabs+`
+      <div class="hint">💡 <b>轻音</b> = 词里不承担重音的音节。轻音节里的元音会「缩水变轻」，掌握本页规则，长词里一大半音节都能直接读对。</div>
+      ${LIGHT_RULES.map(r=>`<div class="rule-item">
+        <div class="ri-n">${r.n}</div>
+        <div class="ri-d">${r.d}</div>
+        <div class="ri-ex">例：${r.ex}</div>
+      </div>`).join("")}
+      <div class="grp-title">轻音听感（点词听重音 + 轻音对比）</div>
+      <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-main" onclick="say('banana',0.55)">🔊 banana（bə·NA·nə）</button>
+        <button class="btn btn-ghost" onclick="say('careful',0.55)">🔊 careful（CARE·ful）</button>
+        <button class="btn btn-ghost" onclick="say('little',0.55)">🔊 little（LIT·tle）</button>
+        <button class="btn btn-ghost" onclick="say('opportunity',0.55)">🔊 opportunity（ˌ轻·轻·ˈ重·轻·轻）</button>
+      </div>
+      <div class="st-note" style="margin-top:14px">🎯 练法：读长词时「重音读满、轻音带过」—— 重读音节打拍子读饱满，其余音节用 /ə/ 快速滑过，节奏对了发音就对了。</div>`;
   }else if(rulesTab==="stress"){
     const demos=["opportunity","university","information","individual","generation"];
     c.innerHTML=tabs+`

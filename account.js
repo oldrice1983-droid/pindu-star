@@ -96,7 +96,7 @@
         '<button id="pdGo" class="pd-go" type="button">登录</button>' +
         '<div id="pdErr" class="pd-err"></div>' +
         '<div id="pdSwitch" class="pd-switch"></div>' +
-        '<div class="pd-hint">数据仅保存在本机浏览器，不上传任何服务器。</div>' +
+        '<div class="pd-hint">数据仅保存在本机浏览器，不上传任何服务器。<br>请固定用同一种方式打开本页（Safari 或主屏幕图标，二选一），<br>两者数据互相独立；清理浏览器数据会丢失进度。</div>' +
       '</div>';
     document.body.appendChild(o);
 
@@ -175,6 +175,7 @@
     bar.innerHTML =
       '<button class="pd-bar-btn" id="pdBarBtn" type="button">👤 ' + esc(user) + ' ▾</button>' +
       '<div class="pd-menu" id="pdMenu">' +
+        '<button type="button" id="pdDataBtn">📊 学习数据</button>' +
         '<button type="button" id="pdSwitchBtn">🔄 切换账号</button>' +
         '<button type="button" id="pdLogoutBtn">🚪 退出登录</button>' +
       '</div>';
@@ -183,9 +184,47 @@
     document.getElementById("pdBarBtn").onclick = function () { menu.style.display = menu.style.display === "block" ? "none" : "block"; };
     document.getElementById("pdLogoutBtn").onclick = function () { setCur(null); location.reload(); };
     document.getElementById("pdSwitchBtn").onclick = function () { setCur(null); location.reload(); };
+    document.getElementById("pdDataBtn").onclick = function () { menu.style.display = "none"; showDataPanel(user); };
     document.addEventListener("click", function (e) {
       if (!bar.contains(e.target)) menu.style.display = "none";
     });
+  }
+
+  /* ---------- 学习数据面板：可视化确认进度确实存在本机 ---------- */
+  function showDataPanel(user) {
+    var old = document.getElementById("pdDataMask");
+    if (old) old.parentNode.removeChild(old);
+    function jget(k) { try { return JSON.parse(LS.getItem(k)) || null; } catch (e) { return null; } }
+    var prog = jget("phonics_progress_v1") || {};   // shim 自动按账号前缀读写
+    var known = 0, seen = 0;
+    Object.keys(prog).forEach(function (k) { if (prog[k] === "k") known++; seen++; });
+    var tk = (function () { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })();
+    var log = jget("phonics_learnlog_v1") || {};
+    var todayLearned = (log[tk] || []).length;
+    var checkin = jget("phonics_checkin_v1") || {};
+    var days = Object.keys(checkin).length;
+    var storeOK = true;
+    try { LS.setItem("pd_probe2", "1"); storeOK = LS.getItem("pd_probe2") === "1"; LS.removeItem("pd_probe2"); } catch (e) { storeOK = false; }
+    var mask = document.createElement("div");
+    mask.id = "pdDataMask";
+    mask.className = "pd-mask";
+    mask.style.background = "rgba(20,38,30,.72)";
+    mask.innerHTML =
+      '<div class="pd-card">' +
+        '<div class="pd-logo">📊 ' + esc(user) + ' 的学习数据</div>' +
+        '<div class="pd-sub">保存在本机浏览器 · 换账号互不相同</div>' +
+        '<div style="font-size:14.5px;line-height:2.1;margin:4px 2px 10px;color:#33413a">' +
+          '✅ 已掌握单词：<b>' + known + '</b> 个<br>' +
+          '📖 学过（含待复习）：<b>' + seen + '</b> 个<br>' +
+          '📝 今日已学：<b>' + todayLearned + '</b> 个<br>' +
+          '🔥 有打卡记录：<b>' + days + '</b> 天<br>' +
+          '💾 本机存储状态：<b style="color:' + (storeOK ? "#1f8a5a" : "#c0392b") + '">' + (storeOK ? "正常 ✓ 进度会自动保存" : "不可用 ✗ 请检查无痕模式 / Cookie 设置") + '</b>' +
+        '</div>' +
+        '<button class="pd-go" type="button" id="pdDataClose">关闭</button>' +
+      '</div>';
+    document.body.appendChild(mask);
+    document.getElementById("pdDataClose").onclick = function () { mask.parentNode.removeChild(mask); };
+    mask.addEventListener("click", function (e) { if (e.target === mask) mask.parentNode.removeChild(mask); });
   }
 
   /* ---------- 启动 ---------- */
