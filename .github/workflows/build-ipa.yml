@@ -10,10 +10,10 @@ jobs:
   build:
     # 必须用 macos-26（自带 Xcode 26）。Apple 自 2026-04-28 起要求
     # 提交 App Store Connect 的包必须用 Xcode 26 + iOS 26 SDK 构建。
+    # 若 macos-26 排队过久，可改 macos-15（Xcode 16，仅影响上传 App Store，不影响本流程）。
     runs-on: macos-26
 
     env:
-      # 产出无签名 IPA，签名在你自己电脑上用 Sideloadly 做（免费方案）
       CODE_SIGNING_REQUIRED: 'NO'
       CODE_SIGNING_ALLOWED: 'NO'
       CODE_SIGN_IDENTITY: ''
@@ -23,45 +23,63 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 运行环境信息
+        run: |
+          echo "---------------------------------------------"
+          echo "RUNNER_OS   : $RUNNER_OS"
+          echo "RUNNER_ARCH : $RUNNER_ARCH"
+          echo "GITHUB_SHA  : $GITHUB_SHA"
+          echo "NODE        : $(node -v 2>/dev/null || echo none)"
+          echo "RUBY        : $(ruby -v 2>/dev/null || echo none)"
+          echo "POD         : $(pod --version 2>/dev/null || echo none)"
+          echo "GIT         : $(git --version 2>/dev/null || echo none)"
+          echo "---------------------------------------------"
+
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          # 仓库根就是 ios-pack 内容，lock 文件就在根目录（勿加 ios-pack/ 前缀）
           cache: npm
           cache-dependency-path: package-lock.json
 
       - name: 安装依赖
-        run: npm ci || npm install
+        run: |
+          set -e
+          npm ci || npm install
+          echo "node_modules size:"
+          du -sh node_modules
 
       - name: 同步 Web 资源到 iOS 工程
-        run: npx cap sync ios
-
-      - name: 安装 CocoaPods 依赖
         run: |
-          # GitHub 的 macOS runner 自带 CocoaPods，一般无需再装
-          pod --version || sudo gem install cocoapods
-          pod install
-          # 兜底：正常 pod install 会生成 contents.xcworkspacedata，
-          # 若缺失会导致后面 xcodebuild -workspace 找不到工程
-          if [ ! -f "ios/App/App.xcworkspace/contents.xcworkspacedata" ]; then
-            echo "workspace file missing, recreating..."
-            mkdir -p "ios/App/App.xcworkspace"
-            cat > "ios/App/App.xcworkspace/contents.xcworkspacedata" << 'XW'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <Workspace version = "1.0">
-             <FileRef location = "group:App.xcodeproj"></FileRef>
-          </Workspace>
-          XW
+          set -e
+          npx cap sync ios
+          echo "public mp3 count:"
+          find ios/App/App/public -name "*.mp3" | wc -l
+
+      - name: 安装 CocoaPods
+        run: |
+          set -e
+          if ! command -v pod >/dev/null 2>&1; then
+            echo "pod not found, installing via Homebrew..."
+            brew install cocoapods
           fi
-          test -f "ios/App/App.xcworkspace/contents.xcworkspacedata" && echo "workspace ready"
+          pod --version
+
+      - name: pod install
+        working-directory: ios/App
+        run: |
+          set -e
+          pod install --repo-update
+          if [ ! -f "App.xcworkspace/contents.xcworkspacedata" ]; then
+            echo "ERROR: workspace file still missing after pod install"
+            exit 1
+          fi
+          echo "workspace OK"
 
       - name: 编译打包（Archive）
         run: |
           set -e
-          echo "Xcode version:"
           xcodebuild -version
-          echo "Deploy target: $IPHONEOS_DEPLOYMENT_TARGET"
           xcodebuild \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
@@ -73,14 +91,19 @@ jobs:
             CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
             IPHONEOS_DEPLOYMENT_TARGET="$IPHONEOS_DEPLOYMENT_TARGET" \
             -quiet
-          test -d build/App.xcarchive && echo "Archive OK"
+          test -d build/App.xcarchive
+          echo "ARCHIVE OK"
 
       - name: 从 Archive 提取 IPA
         run: |
           set -e
           mkdir -p build/Payload
           APP_PATH=$(find build/App.xcarchive/Products/Applications -maxdepth 1 -name "*.app" | head -1)
-          if [ -z "$APP_PATH" ]; then echo "No .app found"; exit 1; fi
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: no .app inside the archive"
+            ls -R build/App.xcarchive/Products || true
+            exit 1
+          fi
           cp -R "$APP_PATH" build/Payload/
           cd build
           zip -qry pindu-star-unsigned.ipa Payload
