@@ -190,8 +190,9 @@
       '    <input id="suEmail" type="email" placeholder="邮箱" autocomplete="username">',
       '    <input id="suPass" type="password" placeholder="设置密码（6 位以上）" autocomplete="new-password">',
       '    <div class="wb-row"><input id="suCode" placeholder="邮箱验证码"><button id="suSend" type="button">获取验证码</button></div>',
-      '    <button id="suBtn" class="wb-primary">注册并登录</button>',
-      '  </div>',
+'    <button id="suBtn" class="wb-primary">注册并登录</button>',
+'    <div class="wb-hint" style="margin-top:8px">直接点「注册并登录」即可；若提示需验证，填完邮箱验证码再点一次。</div>',
+'  </div>',
       '  <div class="wb-pane" data-pane="reset" hidden>',
       '    <input id="rsEmail" type="email" placeholder="邮箱" autocomplete="username">',
       '    <button id="rsBtn" class="wb-primary">发送重置邮件</button>',
@@ -219,7 +220,7 @@
     el("otpSend").onclick = otpSend;
     el("otpBtn").onclick = otpVerify;
     el("suSend").onclick = suSend;
-    el("suBtn").onclick = suVerify;
+    el("suBtn").onclick = suSubmit;
     el("rsBtn").onclick = resetSend;
     el("wbOut").onclick = logout;
     el("wbEdit").onclick = editProfile;
@@ -271,16 +272,33 @@
     suPending = { email: email, password: password, verificationId: r.data.verificationId, isExistingUser: r.data.isExistingUser };
     countdown("suSend"); setErr("验证码已发送，请查收邮箱", true);
   }
-  async function suVerify() {
+  async function suSubmit() {
     setErr("");
-    var code = val("suCode"); if (!suPending) return setErr("请先获取验证码");
-    if (suPending.isExistingUser) { showTab("pwd"); suPending = null; return setErr("该邮箱已注册，请用密码登录"); }
-    var r = await cloud.auth.verifyOtp({
-      email: suPending.email, verificationId: suPending.verificationId,
-      isExistingUser: false, token: code, password: suPending.password
-    });
-    if (r.error) return setErr(r.error.message);
-    suPending = null;
+    var email = val("suEmail"), password = val("suPass"), code = val("suCode");
+    if (!email) return setErr("请输入邮箱");
+    if (!password || password.length < 6) return setErr("密码至少 6 位");
+    // 已填验证码 → 走 OTP 验证注册
+    if (code) {
+      if (!suPending) return setErr("请先点「获取验证码」");
+      if (suPending.isExistingUser) { showTab("pwd"); suPending = null; return setErr("该邮箱已注册，请用密码登录"); }
+      var r2 = await cloud.auth.verifyOtp({
+        email: suPending.email, verificationId: suPending.verificationId,
+        isExistingUser: false, token: code, password: suPending.password
+      });
+      if (r2.error) return setErr(r2.error.message);
+      suPending = null;
+      return;
+    }
+    // 未填验证码 → 先尝试免验证直接注册（若后端关闭了邮件确认即可纯密码注册成功）
+    try {
+      var r = await cloud.auth.signUp({ email: email, password: password });
+      if (r.error) {
+        setErr("需要邮箱验证码：请点「获取验证码」并填写后再注册", false);
+        return;
+      }
+      if (r.data && r.data.session) return; // 直接登录成功（纯密码注册达成）
+      setErr("账号已创建，请查收验证邮件完成激活后再登录", true);
+    } catch (e) { setErr("注册失败：" + (e && e.message ? e.message : e)); }
   }
   async function resetSend() {
     setErr("");
