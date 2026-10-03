@@ -63,9 +63,10 @@
     ".pd-acc{display:flex;flex-wrap:wrap;gap:7px}" +
     ".pd-acc button{border:1.5px solid #d8e3dd;background:#f6faf8;color:#2f6e52;border-radius:20px;padding:6px 13px;font-size:13px;cursor:pointer}" +
     ".pd-acc button:active{background:#e8f3ed}" +
-    ".pd-bar{position:fixed;top:10px;right:12px;z-index:9000;font-family:'Segoe UI',Arial,'PingFang SC',sans-serif}" +
-    ".pd-bar-btn{border:0;background:rgba(31,110,77,.92);color:#fff;font-size:13px;font-weight:600;padding:7px 13px;border-radius:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}" +
-    ".pd-menu{position:absolute;right:0;top:42px;background:#fff;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.22);padding:6px;min-width:148px;display:none}" +
+    ".pd-bar{position:relative;z-index:9000;display:inline-flex;align-items:center;font-family:'Segoe UI',Arial,'PingFang SC',sans-serif}" +
+    ".pd-bar.pd-bar-float{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px}" +
+    ".pd-bar-btn{border:0;background:rgba(255,255,255,.92);color:#1f6e4d;font-size:13px;font-weight:700;padding:7px 13px;border-radius:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}" +
+    ".pd-menu{position:absolute;right:0;top:44px;background:#fff;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.22);padding:6px;min-width:148px;display:none;z-index:9500}" +
     ".pd-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;font-size:13.5px;color:#33413a;border-radius:8px;cursor:pointer}" +
     ".pd-menu button:active{background:#eef5f1}";
 
@@ -179,7 +180,11 @@
         '<button type="button" id="pdSwitchBtn">🔄 切换账号</button>' +
         '<button type="button" id="pdLogoutBtn">🚪 退出登录</button>' +
       '</div>';
-    document.body.appendChild(bar);
+    /* 优先挂进应用头部（⚙ 设置按钮旁），避免浮在 iPhone 状态栏/灵动岛上点不到；
+       找不到头部（异常情况）才退回右上角悬浮，并用 safe-area 避开刘海 */
+    var hd = document.querySelector(".hd-top");
+    if (hd && hd.appendChild) { hd.appendChild(bar); }
+    else { bar.classList.add("pd-bar-float"); document.body.appendChild(bar); }
     var menu = document.getElementById("pdMenu");
     document.getElementById("pdBarBtn").onclick = function () { menu.style.display = menu.style.display === "block" ? "none" : "block"; };
     document.getElementById("pdLogoutBtn").onclick = function () { setCur(null); location.reload(); };

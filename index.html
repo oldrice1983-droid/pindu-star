@@ -5435,7 +5435,8 @@ function renderLearn(){
           连续打卡：<b style="color:var(--green-d)">${streak()} 天</b>
         </p>
         <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <button class="btn btn-main" onclick="goRead()">📰 去读今日文章</button>
+          <button class="btn btn-main" onclick="continueLearning()">➕ 继续学新词</button>
+          <button class="btn btn-ghost" onclick="goRead()">📰 去读今日文章</button>
           <button class="btn btn-ghost" onclick="restartToday()">↻ 再学一遍今日词表</button>
         </div>
       </div>`;
@@ -5542,6 +5543,25 @@ function judge(s){
   idx=idx+1; render();
 }
 function nextWord(){ const d=getDaily(); idx=Math.min(idx+1, d.list.length); render(); }
+/* 今日词表学完后，追加一组新词继续学（进度、打卡、日志照常累计） */
+function continueLearning(){
+  const d=getDaily();
+  const add=Math.max(5, Number(settings.dailyCount)||10);
+  const pool=WORDS.filter(w=>(settings.level==="all"||String(w.lv)===String(settings.level))
+                           && (settings.exam==="all"||(w.exam||[]).includes(settings.exam))
+                           && (settings.itGrade==="all"||w.it===settings.itGrade));
+  const base=pool.length?pool:WORDS.filter(w=>settings.level==="all"||String(w.lv)===String(settings.level));
+  const have=new Set(d.list);
+  const more=base.filter(w=>!have.has(w.w)).slice(0, add).map(w=>w.w);
+  if(!more.length){ alert("这个级别的新词都学完啦！可以换个级别，或去读文章、做测试巩固～"); return; }
+  const oldLen=d.list.length;
+  d.list=d.list.concat(more); daily=d;
+  try{ localStorage.setItem(DKEY, JSON.stringify(daily)); }catch(e){}
+  const tk=todayKey(), c=checkin[tk]||{words:false,read:false,list:[]};
+  c.words=false; checkin[tk]=c; saveCheckin();
+  idx=oldLen;   /* 从第一个新词接着学 */
+  render();
+}
 function prevWord(){ idx=Math.max(idx-1,0); render(); }
 function restartToday(){ idx=0; const tk=todayKey(); const c=checkin[tk]||{words:false,read:false,list:[]}; c.list=[]; c.words=false; checkin[tk]=c; saveCheckin(); render(); }
 function goRead(){ document.querySelector('nav button[data-tab=read]').click(); }
@@ -6447,7 +6467,7 @@ function renderRead(){
         <div class="para">
           <div class="p-en">${wrapArt(p)}
             <button class="btn btn-ghost" style="padding:2px 10px;font-size:12px;margin-left:6px"
-              onclick="say(${JSON.stringify(p).replace(/"/g,"&quot;")},0.85)">🔊</button>
+              onclick="artPara(this.getAttribute('data-p'))" data-p="${escHTML(p).replace(/"/g,"&quot;")}">🔊</button>
           </div>
           ${showZh&&zhs[i]?`<div class="p-zh">${zhs[i]}</div>`:""}
         </div>`).join("")}
@@ -6457,7 +6477,8 @@ function renderRead(){
       ${curArt<ARTICLES.length-1?'<button class="btn btn-ghost" onclick="curArt++;renderRead()">下一篇 →</button>':''}
     </div>`;
 }
-/* 全文朗读：逐段依次播放（真人音频时按「播放结束」事件衔接，不会串音） */
+/* 全文朗读：整段自然连读 —— 优先预生成的整句录音；没有录音的段落整段交给
+   语音合成（句内带真实停顿和语调，模拟真人朗读），绝不逐词蹦 */
 let _readTimer=null, _readSeq=0;
 function stopArticle(){
   _readSeq++;
@@ -6465,23 +6486,47 @@ function stopArticle(){
   if(_audioEl){ try{ _audioEl.pause(); }catch(e){} }
   if("speechSynthesis" in window) speechSynthesis.cancel();
 }
+/* 段落朗读入口（段内 🔊 按钮）：整段连读 */
+function artPara(text){
+  stopArticle();
+  const k=String(text||"").trim().replace(/\s+/g," ");
+  const id=(settings.source==="real" && SENT_AUDIO[k])?SENT_AUDIO[k]:null;
+  if(id){
+    const acc=settings.accent==="uk"?"uk":"us";
+    _lastPlayMode="file";
+    return playFile(`audio/sent/${acc}/${id}.mp3`, text, 0.9);
+  }
+  speak(text, 0.9);
+}
 function readArticle(){
   stopArticle();
   const a=ARTICLES[curArt], paras=a.en.split("\n"), seq=++_readSeq;
   let i=0;
   function next(){
     if(seq!==_readSeq || i>=paras.length) return;
-    const p=paras[i++], real=playSentence(p,0.85);
-    if(real){
-      /* 真人音频：等这段播完再播下一段 */
+    const p=paras[i++];
+    const k=String(p||"").trim().replace(/\s+/g," ");
+    const id=(settings.source==="real" && SENT_AUDIO[k])?SENT_AUDIO[k]:null;
+    if(id){
+      /* 有整段真人/神经录音 → 直接播放，播完接下一段 */
+      const acc=settings.accent==="uk"?"uk":"us";
       const el=audioEl();
-      const go=()=>{ if(seq!==_readSeq) return; _readTimer=setTimeout(next,250); };
-      el.onended=go;
-      el.onerror=()=>{ if(seq===_readSeq){ el.onerror=null; speak(p,0.85); _readTimer=setTimeout(next,p.length*70+600);} };
+      const go=()=>{ if(seq!==_readSeq) return; _readTimer=setTimeout(next,300); };
+      el.onended=null; el.onended=go;
+      el.onerror=()=>{ if(seq===_readSeq){ el.onerror=null; speakPara(p); } };
+      _lastPlayMode="file";
+      playFile(`audio/sent/${acc}/${id}.mp3`, p, 0.85);
     }else{
-      speak(p,0.85);
-      _readTimer=setTimeout(next, p.length*70+700);
+      speakPara(p);
     }
+  }
+  /* 整段语音合成连读：onend 精确衔接下一段 + 时长估算兜底，绝不卡住 */
+  function speakPara(p){
+    let done=false;
+    const go=()=>{ if(done||seq!==_readSeq) return; done=true; if(_readTimer) clearTimeout(_readTimer); _readTimer=setTimeout(next,350); };
+    speak(p, 0.9, go);
+    const est=(String(p).split(/\s+/).length*380 + p.length*24)/0.9;
+    _readTimer=setTimeout(go, Math.min(90000, est+5000));
   }
   next();
 }
