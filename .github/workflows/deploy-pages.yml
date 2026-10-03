@@ -1,0 +1,54 @@
+name: 发布到 GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同时只跑一个发布任务
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      # 把 www/ 里的内容作为站点根目录发布，
+      # 这样 index.html 就在根，audio/ 等子目录也一并带上。
+      - name: 准备站点目录
+        run: |
+          set -e
+          echo "源目录内容："
+          ls -la www/ | head -8
+          echo "音频文件数："
+          find www/audio -name "*.mp3" | wc -l
+          echo "index.html 大小："
+          du -h www/index.html
+          # .nojekyll 防止 Jekyll 处理
+          touch www/.nojekyll
+
+      - name: 上传 Pages 产物
+        id: deploy
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./www
+
+      - name: 发布
+        id: publish
+        uses: actions/deploy-pages@v4
