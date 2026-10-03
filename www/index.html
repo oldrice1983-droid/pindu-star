@@ -4464,20 +4464,25 @@ function saveSettings(){ try{ localStorage.setItem(SKEY, JSON.stringify(settings
 const AUDIO_US=["a","about","access","accident","achieve","across","after","age","air","airport","all","almost","also","although","always","america","american","an","and","animal","another","apartment","apple","arabic","are","arm","art","asked","ate","atmosphere","author","autumn","baby","bag","ball","banana","bear","because","become","bed","beer","before","begin","behind","believe","ben","benefit","ber","best","better","beyond","big","bike","bird","birds","biscuit","bit","black","ble","blew","blood","blue","board","boat","body","book","born","both","bought","box","boy","bread","break","bright","bring","brought","build","burn","bus","businesses","busy","by","cake","called","calm","camel","can","candy","canoe","cant","car","care","careful","case","cat","cause","ceiling","certain","chair","changed","chat","checked","cheer","cher","chief","child","children","chinese","chocolate","cide","circuit","cities","city","class","clean","clear","clock","clothes","clue","coat","coin","cold","color","colour","come","community","compare","computer","conceive","const","cook","copy","corn","could","countries","country","couple","course","cover","cow","cows","cre","cream","create","creek","cruise","cul","culture","cultures","cup","cure","cut","cute","cycle","danger","day","dead","decide","deer","den","dent","dentist","depend","desk","dictionary","did","die","difficult","dig","digestion","dinner","distance","divide","do","doctor","doctors","documents","doe","dog","doll","dollar","dough","down","draw","dreams","drew","drink","drives","during","eagle","ear","early","earth","east","easy","eat","economy","education","egg","eight","either","elegant","elephant","eleven","employ","engi","engine","engineer","english","enjoy","enough","enter","environment","establish","established","ever","every","everywhere","evidence","eyes","face","fact","factor","false","family","famous","fan","far","farm","fast","father","feel","few","field","final","find","fine","fire","first","fish","fit","five","flag","flew","flood","floor","flower","fly","foe","food","foot","for","forget","found","fox","freedom","friend","friendly","friends","from","fruit","full","fun","future","game","gar","garden","gate","gen","gene","general","generation","gentle","girl","glass","global","glue","go","good","government","grade","grand","grant","graph","grass","gray","great","green","grew","grey","group","grow","guitar","hair","hand","hap","happy","hard","hat","have","he","head","health","hear","height","heir","help","helps","hen","her","here","hidden","high","him","hire","hit","holidays","home","honey","hope","horses","hot","hours","house","how","huge","hurt","i","ideas","identified","identify","ignore","immigrant","immigrants","immigration","important","in","individual","industry","infor","information","interesting","into","invite","is","island","issue","it","japa","jewel","jobs","join","journey","juice","jump","key","kick","kid","kind","king","kite","knife","know","lake","language","languages","law","learn","leave","leaves","leg","legal","lets","liberty","lie","life","light","like","likes","line","lish","little","live","look","lose","love","luck","lunch","machine","made","main","major","make","man","many","map","me","meet","melting","mem","member","memory","men","mere","met","method","middle","migration","milk","million","minute","miss","mix","moment","money","monkey","month","moon","more","morning","most","mother","motor","move","much","museum","music","must","my","name","names","nation","nature","near","necessary","need","needed","needs","neer","neighbour","neither","nervous","nese","ness","new","nice","nif","nifty","night","nine","nique","no","noise","north","nose","note","now","nurse","obey","of","off","officers","often","oil","old","on","online","open","opportunities","opportunity","or","order","other","out","outside","over","ox","page","pain","paint","pair","pan","panda","paper","park","particular","party","pause","pear","pen","pencil","penny","people","person","phone","photo","photos","pic","pick","picture","pie","piece","pig","pioneer","plan","plane","plant","plate","play","please","plus","point","pol","police","policy","por","port","possible","pot","potato","prince","principle","print","problem","process","progress","protect","puppy","pure","push","put","question","quick","quiet","quire","quite","rain","rainy","read","reading","ready","receive","red","reduction","remember","report","require","requires","research","respond","return","rice","right","rise","rises","river","road","room","rope","rose","rough","route","run","running","sailed","salt","sauce","saw","say","school","schwa","scien","science","scooter","score","sea","search","second","see","sentence","serve","share","she","ship","shirt","shoe","short","sick","sig","significant","silence","silent","similar","simple","since","sincere","sing","singing","sion","sister","sit","site","six","ski","sleep","sleeping","slow","small","sniff","snow","snows","soap","society","socks","sofa","some","son","soon","sound","soup","spanish","speak","spond","sponge","sport","sports","spring","square","stab","stairs","stamp","stand","star","stars","start","station","statue","stayed","steak","stop","store","stories","straw","street","struck","structure","student","studio","study","stupid","success","sudden","sugar","suggestion","suit","sun","sunny","supply","sure","surprise","survey","swear","sweet","swim","table","take","takes","talk","tea","teach","teacher","ten","ter","term","than","thank","that","the","their","there","these","they","thing","think","thirty","this","those","though","thought","three","through","throughout","tick","tie","tif","time","tion","tired","to","toast","today","toe","together","tonight","too","top","total","touch","tough","town","toy","trade","train","travel","tree","trip","true","try","ture","turn","under","unit","university","up","us","use","uses","vacant","valley","ver","verb","very","vid","video","virus","visit","vital","vivid","wait","walk","wall","want","wants","war","ward","warm","warn","was","wash","water","way","we","wear","weather","web","week","weigh","welcome","went","were","wet","what","when","where","white","who","why","wig","win","wind","window","winter","wire","wish","with","work","world","worse","worth","yawn","year","years","yee","yes","york","you","young","zoo"];
 const AUDIO_UK=["a","about","access","accident","achieve","across","after","age","air","airport","all","almost","also","although","always","america","american","an","and","animal","another","apartment","apple","arabic","are","arm","art","asked","ate","atmosphere","author","autumn","baby","bag","ball","banana","bear","because","become","bed","beer","before","begin","behind","believe","ben","benefit","ber","best","better","beyond","big","bike","bird","birds","biscuit","bit","black","ble","blew","blood","blue","board","boat","body","book","born","both","bought","box","boy","bread","break","bright","bring","brought","build","burn","bus","businesses","busy","by","cake","called","calm","camel","can","candy","canoe","cant","car","care","careful","case","cat","cause","ceiling","certain","chair","changed","chat","checked","cheer","cher","chief","child","children","chinese","chocolate","cide","circuit","cities","city","class","clean","clear","clock","clothes","clue","coat","coin","cold","color","colour","come","community","compare","computer","conceive","const","cook","copy","corn","could","countries","country","couple","course","cover","cow","cows","cre","cream","create","creek","cruise","cul","culture","cultures","cup","cure","cut","cute","cycle","danger","day","dead","decide","deer","den","dent","dentist","depend","desk","dictionary","did","die","difficult","dig","digestion","dinner","distance","divide","do","doctor","doctors","documents","doe","dog","doll","dollar","dough","down","draw","dreams","drew","drink","drives","during","eagle","ear","early","earth","east","easy","eat","economy","education","egg","eight","either","elegant","elephant","eleven","employ","engi","engine","engineer","english","enjoy","enough","enter","environment","establish","established","ever","every","everywhere","evidence","eyes","face","fact","factor","false","family","famous","fan","far","farm","fast","father","feel","few","field","final","find","fine","fire","first","fish","fit","five","flag","flew","flood","floor","flower","fly","foe","food","foot","for","forget","found","fox","freedom","friend","friendly","friends","from","fruit","full","fun","future","game","gar","garden","gate","gen","gene","general","generation","gentle","girl","glass","global","glue","go","good","government","grade","grand","grant","graph","grass","gray","great","green","grew","grey","group","grow","guitar","hair","hand","hap","happy","hard","hat","have","he","head","health","hear","height","heir","help","helps","hen","her","here","hidden","high","him","hire","hit","holidays","home","honey","hope","horses","hot","hours","house","how","huge","hurt","i","ideas","identified","identify","ignore","immigrant","immigrants","immigration","important","in","individual","industry","infor","information","interesting","into","invite","is","island","issue","it","japa","jewel","jobs","join","journey","juice","jump","key","kick","kid","kind","king","kite","knife","know","lake","language","languages","law","learn","leave","leaves","leg","legal","lets","liberty","lie","life","light","like","likes","line","lish","little","live","look","lose","love","luck","lunch","machine","made","main","major","make","man","many","map","me","meet","melting","mem","member","memory","men","mere","met","method","middle","migration","milk","million","minute","miss","mix","moment","money","monkey","month","moon","more","morning","most","mother","motor","move","much","museum","music","must","my","name","names","nation","nature","near","necessary","need","needed","needs","neer","neighbour","neither","nervous","nese","ness","new","nice","nif","nifty","night","nine","nique","no","noise","north","nose","note","now","nurse","obey","of","off","officers","often","oil","old","on","online","open","opportunities","opportunity","or","order","other","out","outside","over","ox","page","pain","paint","pair","pan","panda","paper","park","particular","party","pause","pear","pen","pencil","penny","people","person","phone","photo","photos","pic","pick","picture","pie","piece","pig","pioneer","plan","plane","plant","plate","play","please","plus","point","pol","police","policy","por","port","possible","pot","potato","prince","principle","print","problem","process","progress","protect","puppy","pure","push","put","question","quick","quiet","quire","quite","rain","rainy","read","reading","ready","receive","red","reduction","remember","report","require","requires","research","respond","return","rice","right","rise","rises","river","road","room","rope","rose","rough","route","run","running","sailed","salt","sauce","saw","say","school","schwa","scien","science","scooter","score","sea","search","second","see","sentence","serve","share","she","ship","shirt","shoe","short","sick","sig","significant","silence","silent","similar","simple","since","sincere","sing","singing","sion","sister","sit","site","six","ski","sleep","sleeping","slow","small","sniff","snow","snows","soap","society","socks","sofa","some","son","soon","sound","soup","spanish","speak","spond","sponge","sport","sports","spring","square","stab","stairs","stamp","stand","star","stars","start","station","statue","stayed","steak","stop","store","stories","straw","street","struc","struck","structure","student","studio","study","stupid","success","sudden","sugar","suggestion","suit","sun","sunny","supply","sure","surprise","survey","swear","sweet","swim","table","take","takes","talk","tea","teach","teacher","ten","ter","term","than","thank","that","the","their","there","these","they","thing","think","thirty","this","those","though","thought","three","through","throughout","tick","tie","tif","time","tion","tired","to","toast","today","toe","together","tonight","too","top","total","touch","tough","town","toy","trade","train","travel","tree","trip","true","try","ture","turn","under","unit","university","up","us","use","uses","vacant","valley","ver","verb","very","vid","video","virus","visit","vital","vivid","wait","walk","wall","want","wants","war","ward","warm","warn","was","wash","water","way","we","wear","weather","web","week","weigh","welcome","went","were","wet","what","when","where","white","who","why","wig","win","wind","window","winter","wire","wish","with","work","world","worse","worth","yawn","year","years","yee","yes","york","you","young","zoo"];
 /* 整句 / 文章段落的神经语音音频（微软 edge-tts 生成，比浏览器合成流畅） */
-const SENT_AUDIO={"The cat is sleeping on the sofa.":"s0001","My dog likes to play with the ball.":"s0002","The sun rises in the east.":"s0003","There are many fish in the river.":"s0004","The ship sailed across the sea.":"s0005","Let's have a chat after class.":"s0006","She made a chocolate cake for me.":"s0007","I go to school by bike every day.":"s0008","Welcome to my new home.":"s0009","Birds are singing in the tree.":"s0010","The leaves turn green in spring.":"s0011","This book is very interesting.":"s0012","Chinese food is famous all over the world.":"s0013","The stars are bright tonight.":"s0014","My father drives a car to work.":"s0015","A little bird is singing outside the window.":"s0016","Please turn off the light before you leave.":"s0017","Good night, sweet dreams.":"s0018","Fish live in water.":"s0019","My teacher is very kind to us.":"s0020","The children walk to school together.":"s0021","I love my family very much.":"s0022","I read English every morning.":"s0023","The weather is fine today.":"s0024","She drew a picture of her family.":"s0025","He uses a computer to study English.":"s0026","I remember my first day at school.":"s0027","Cows and horses are farm animals.":"s0028","There are many flowers in the garden.":"s0029","Every student needs a good dictionary.":"s0030","It often snows here in winter.":"s0031","She is happy to see her old friends.":"s0032","The book is on the table.":"s0033","She waters the flowers every day.":"s0034","Many immigrants came to America through Ellis Island.":"s0035","The migration of people changed the city.":"s0036","The government made a new education policy.":"s0037","Immigrants help the economy of their new country.":"s0038","New ideas can change society.":"s0039","America has people from many different cultures.":"s0040","America gave many people new opportunities.":"s0041","Both countries benefit from trade.":"s0042","There was a significant rise in immigration.":"s0043","We must protect the environment.":"s0044","They established a new school in 1900.":"s0045","There is evidence that the plan works.":"s0046","Jobs are a key factor in migration.":"s0047","They identified the main cause of the problem.":"s0048","Learning a language is a long process.":"s0049","The job requires good English.":"s0050","Research shows that reading helps learning.":"s0051","How did the government respond?":"s0052","The structure of the school changed.":"s0053","Each individual has a different story.":"s0054","New York is a major city for immigrants.":"s0055","This method helps you learn faster.":"s0056","Freedom is a basic principle of the country.":"s0057","Immigrants create new businesses.":"s0058","Migration is a global issue.":"s0059","They needed legal documents to enter.":"s0060","The community helped the new family.":"s0061","The second generation speaks English well.":"s0062","She wants to study at an American university.":"s0063","You can find information online.":"s0064","Many people come to America from other countries. They are called immigrants.":"s0065","They travel by ship or by plane. They bring their clothes, photos and stories.":"s0066","In America they work hard and go to school. They want a better life for their family.":"s0067","From 1892 to 1954, more than twelve million immigrants came to New York. First they saw the Statue of Liberty. Then they went to Ellis Island.":"s0068","Doctors checked their eyes and health. Officers asked their names and jobs. Most people stayed for a few hours.":"s0069","After that, they could start a new life in America. Today Ellis Island is a museum.":"s0070","America is often called a melting pot, because people from many countries live and work together there. Immigrants bring their languages, food, music and holidays.":"s0071","In big cities you can hear Spanish, Chinese or Arabic on the street. Their children often speak English at school and another language at home.":"s0072","This mix of cultures has changed American food, art and sports. But the journey is not always easy. Many immigrants miss their old country, and it takes years to feel at home.":"s0073","People migrate for many reasons. One major factor is the economy: many immigrants move because they want jobs and new opportunities.":"s0074","Another factor is society and culture. Some people move to join family members who established a community in a new country. A community can help an individual find work, learn the language and understand the legal process.":"s0075","Government policy also matters. Immigration policy decides who may enter, and what evidence or documents they require. A significant change in policy can affect the whole global structure of migration.":"s0076","Migration has created a generation of families with roots in more than one country. Research shows that immigration brings benefits to the economy, changes the environment of cities, and is now a major principle of modern life.":"s0077"};
+const SENT_AUDIO={"The cat is sleeping on the sofa.":"s0001","My dog likes to play with the ball.":"s0002","The sun rises in the east.":"s0003","There are many fish in the river.":"s0004","The ship sailed across the sea.":"s0005","Let's have a chat after class.":"s0006","She made a chocolate cake for me.":"s0007","I go to school by bike every day.":"s0008","Welcome to my new home.":"s0009","Birds are singing in the tree.":"s0010","The leaves turn green in spring.":"s0011","This book is very interesting.":"s0012","Chinese food is famous all over the world.":"s0013","The stars are bright tonight.":"s0014","My father drives a car to work.":"s0015","A little bird is singing outside the window.":"s0016","Please turn off the light before you leave.":"s0017","Good night, sweet dreams.":"s0018","Fish live in water.":"s0019","My teacher is very kind to us.":"s0020","The children walk to school together.":"s0021","I love my family very much.":"s0022","I read English every morning.":"s0023","The weather is fine today.":"s0024","She drew a picture of her family.":"s0025","He uses a computer to study English.":"s0026","I remember my first day at school.":"s0027","Cows and horses are farm animals.":"s0028","There are many flowers in the garden.":"s0029","Every student needs a good dictionary.":"s0030","It often snows here in winter.":"s0031","She is happy to see her old friends.":"s0032","The book is on the table.":"s0033","She waters the flowers every day.":"s0034","Many immigrants came to America through Ellis Island.":"s0035","The migration of people changed the city.":"s0036","The government made a new education policy.":"s0037","Immigrants help the economy of their new country.":"s0038","New ideas can change society.":"s0039","America has people from many different cultures.":"s0040","America gave many people new opportunities.":"s0041","Both countries benefit from trade.":"s0042","There was a significant rise in immigration.":"s0043","We must protect the environment.":"s0044","They established a new school in 1900.":"s0045","There is evidence that the plan works.":"s0046","Jobs are a key factor in migration.":"s0047","They identified the main cause of the problem.":"s0048","Learning a language is a long process.":"s0049","The job requires good English.":"s0050","Research shows that reading helps learning.":"s0051","How did the government respond?":"s0052","The structure of the school changed.":"s0053","Each individual has a different story.":"s0054","New York is a major city for immigrants.":"s0055","This method helps you learn faster.":"s0056","Freedom is a basic principle of the country.":"s0057","Immigrants create new businesses.":"s0058","Migration is a global issue.":"s0059","They needed legal documents to enter.":"s0060","The community helped the new family.":"s0061","The second generation speaks English well.":"s0062","She wants to study at an American university.":"s0063","You can find information online.":"s0064","Many people come to America from other countries. They are called immigrants.":"s0065","They travel by ship or by plane. They bring their clothes, photos and stories.":"s0066","In America they work hard and go to school. They want a better life for their family.":"s0067","From 1892 to 1954, more than twelve million immigrants came to New York. First they saw the Statue of Liberty. Then they went to Ellis Island.":"s0068","Doctors checked their eyes and health. Officers asked their names and jobs. Most people stayed for a few hours.":"s0069","After that, they could start a new life in America. Today Ellis Island is a museum.":"s0070","America is often called a melting pot, because people from many countries live and work together there. Immigrants bring their languages, food, music and holidays.":"s0071","In big cities you can hear Spanish, Chinese or Arabic on the street. Their children often speak English at school and another language at home.":"s0072","This mix of cultures has changed American food, art and sports. But the journey is not always easy. Many immigrants miss their old country, and it takes years to feel at home.":"s0073","People migrate for many reasons. One major factor is the economy: many immigrants move because they want jobs and new opportunities.":"s0074","Another factor is society and culture. Some people move to join family members who established a community in a new country. A community can help an individual find work, learn the language and understand the legal process.":"s0075","Government policy also matters. Immigration policy decides who may enter, and what evidence or documents they require. A significant change in policy can affect the whole global structure of migration.":"s0076","Migration has created a generation of families with roots in more than one country. Research shows that immigration brings benefits to the economy, changes the environment of cities, and is now a major principle of modern life.":"s0077","Can I borrow your pen?":"s0078","The child is sleeping in bed.":"s0079","The pig is eating corn.":"s0080","She put the book in the box.":"s0081","He drank a cup of water.":"s0082","I go to school by bus.":"s0083","She wears a red dress.":"s0084","They live in a big house.":"s0085","Please sit here and wait.":"s0086","What is your name?":"s0087","She can make a cake.":"s0088","Let's play a game.":"s0089","What time is it now?":"s0090","Draw a line on the paper.":"s0091","She has a white cat.":"s0092","Please take notes in class.":"s0093","I hope to see you soon.":"s0094","Call me on the phone.":"s0095","I can see a bird.":"s0096","Let's meet at school.":"s0097","We eat lunch at noon.":"s0098","The room is clean and tidy.":"s0099","The moon is bright tonight.":"s0100","This is my bedroom.":"s0101","They live in a white house.":"s0102","He is out of the room.":"s0103","The cow is on the farm.":"s0104","How do you spell it?":"s0105","Have a nice day!":"s0106","Children like to play.":"s0107","It begins to rain.":"s0108","We take the train to school.":"s0109","The children play in the park.":"s0110","My uncle works on a farm.":"s0111","This book is for you.":"s0112","My pencil is short.":"s0113","She was born in May.":"s0114","This is her pen.":"s0115","The girl is my sister.":"s0116","Turn right at the corner.":"s0117","The baby is sleeping.":"s0118","London is a big city.":"s0119","He has no money.":"s0120","It is a sunny day.":"s0121","It is cold and rainy.":"s0122","He wants to become a doctor.":"s0123","I am late because of the rain.":"s0124","Where is my book?":"s0125","The book is over there.":"s0126","This is their car.":"s0127","The cat is under the chair.":"s0128","The plane flies over the city.":"s0129","A cat sat on a mat. The cat had a red hat.":"s0130","The hat fell on the cat. The cat ran to the rat.":"s0131","We see the cat and the hat. The rat is in the bag.":"s0132","Ben has a red pen. Ben set the pen on the desk.":"s0133","Jen got the pen and gave it back. Ben said thank you.":"s0134","Ben and Jen see the pen. It is a big red pen.":"s0135","A big pig sat in the pit. The pig is wet and sick.":"s0136","The kid hid the pig with a stick. The pig is glad.":"s0137","We see the big pig sit. The pig is in the mud.":"s0138","A red fox got a box. The box has a top and a lock.":"s0139","The fox shot the rock with a sock. The dog can not stop.":"s0140","We see the red fox run. The fox is on the log.":"s0141","The sun is up. A bug is on the cup.":"s0142","The bug dug a hole under the rug. The sun is hot.":"s0143","We see the bug hum. The sun is fun.":"s0144","A cat is in a bag. The bag is on a rag.":"s0145","The cat ran to the van and the fan. The man can see.":"s0146","We see the cat nap. The bag is flat.":"s0147","My pet is wet. The pet met a net and a jet.":"s0148","The vet got the pet and let it rest. The pet is best.":"s0149","We see the wet pet. The pet is on the step.":"s0150","Tim is a kid. Tim did a bid and a rid.":"s0151","The kid hid a lid on the lid of a bin. Tim is slim.":"s0152","We see Tim sit. Tim is a good kid.":"s0153","The pot is hot. The dog got a dot on the spot.":"s0154","The mom got the pot and the cot. The pot is not lot.":"s0155","We see the hot pot. The dog is on the rock.":"s0156","A cub is in the tub. The tub has a sub and a club.":"s0157","The cub rubbed the hub with a grub. The cub is glad.":"s0158","We see the cub hug. The tub is full.":"s0159","Six kids sit on a fix. The kids mix a six and a tick.":"s0160","The kids pick a stick and a brick. The milk is rich.":"s0161","We see six kids. The kids are quick.":"s0162","A map is on a cap. The cap has a lap and a gap.":"s0163","The man map a tap on the trap. The cat can nap.":"s0164","We see the map and cap. The man is glad.":"s0165","A blue plane came from the same name. Kate gave the plane a frame.":"s0166","The plane flew over the lake and the game. It was a great day.":"s0167","We see the blue plane. It made a flame.":"s0168","I have a nice bike. Mike rides the bike to the like.":"s0169","The bike is white and light. We like the ride.":"s0170","We see my nice bike. Mike is on the side.":"s0171","A rose grew by the nose. Joe wrote a note with hope.":"s0172","The note told of a globe and a rope. The rose is in the scope.":"s0173","We see a rose and note. Joe can cope.":"s0174","A cute mule ate a cube. June rode the mule to the tube.":"s0175","The mule is huge and rude. We excused the mood.":"s0176","We see the cute mule. The tube is in the use.":"s0177","A green tree stands by the sea. We see three bees on the leaf.":"s0178","The queen ate a piece of cheese. The sheep fell asleep.":"s0179","We see the green tree. The breeze is free.":"s0180","A brown bear sat on a chair. The bear wore a square and a pair.":"s0181","The bear shared a care with a hare. The air is fair.":"s0182","We see the brown bear. The bear is rare.":"s0183","A star is in the dark sky. The car parked by the bar.":"s0184","The guitar played a far song. We are smart and bright.":"s0185","We see the star. The sky is our start.":"s0186","A smart card is in the yard. The guard kept the card hard.":"s0187","The bard sang of a garden and a lard. We regard the start.":"s0188","We see the smart card. The card is a part.":"s0189","A small storm blew the plant. The glass splashed on the branch.":"s0190","The clock struck with a crash. We saw a flash.":"s0191","We see a small storm. The grass is fresh.":"s0192","A fresh fish swam in the dish. The ship wished for a push.":"s0193","The brush washed the cash. We finished the rush.":"s0194","We see the fresh fish. The fish is a wish.":"s0195","A white whale sang a song. The whale went wrong all along.":"s0196","The wing of a swing was strong. We belong to the throng.":"s0197","We see the white whale. The whale is a king.":"s0198","A quiet queen sat on a bench. The queen ate a quilt and a quench.":"s0199","The quest was quick and cheap. We kept the link.":"s0200","We see the quiet queen. The queen is unique.":"s0201","A cold wind blew the gold. The child held a fold.":"s0202","The old told a story of bold. We sold the mold.":"s0203","We see a cold wind. The wind is told.":"s0204","A bright light lit the night. The flight was in sight.":"s0205","The right height was a delight. We might take a bite.":"s0206","We see the bright light. The light is a sight.":"s0207","My family is happy and kind. We have a father, a mother and a child.":"s0208","Every morning we eat and smile. At night we read a book for a while.":"s0209","A happy family is the best place to grow and learn.":"s0210","A little rabbit lives in the garden. It likes to eat the carrot and the lettuce.":"s0211","When the weather is sunny, the rabbit jumps with joy.":"s0212","The children watch the rabbit and laugh. They are very careful not to scare it.":"s0213","A yellow butterfly flies over the flower. It moves from petal to petal in the summer.":"s0214","The butterfly is silent and light. It does not make a sound.":"s0215","We follow the butterfly with our eyes. It is a small wonder of nature.":"s0216","We plan a summer picnic by the river. Mother packs the sandwich, the apple and the water.":"s0217","Father drives the car to the green hill. The children run and play.":"s0218","After the meal we lie on the grass. The sky is blue and the wind is soft.":"s0219","A clever monkey lives in the forest. It can open the banana with its hand.":"s0220","When the tiger comes, the monkey climbs a tree. It is safe up there.":"s0221","The monkey is smart and funny. Visitors always stop to watch it.":"s0222","I found a broken letter in the box. The paper was old and the words were faint.":"s0223","My grandfather read it with a smile. It was a note from his mother.":"s0224","The letter tells a simple story of love. We keep it in a safe place now.":"s0225","The weather is turning from warm to cool. The leaves on the tree become yellow and red.":"s0226","A gentle wind blows the cloud away. The sun comes out for a moment.":"s0227","We enjoy the change of the season. It reminds us that nature is always moving.":"s0228","The office bought a better scanner last week. It can read a paper in a second.":"s0229","The worker puts the document on the glass. The machine makes a clear picture.":"s0230","A better tool saves our time. We finish the job before the evening.":"s0231","My grandmother has a golden garden behind the house. She plants the rose, the tulip and the sun flower.":"s0232","Every spring she waters the soil with care. The bees come to visit the bloom.":"s0233","The golden garden is her quiet joy. We help her pull the weed on the weekend.":"s0234","The children found a hidden secret under the stair. It was a small box with a silver ring.":"s0235","They opened it with a careful hand. Inside was a tiny note.":"s0236","The secret made them smile. They decided to keep it as a sweet memory.":"s0237","The teacher gave a silent lesson about the star. We listened with our eyes on the map.":"s0238","The topic was the planet and the moon. It was easy and clear.":"s0239","A silent lesson can teach a lot. We left the room with new ideas.":"s0240","She left the open window by the bed. The wind came in with a cool smell.":"s0241","A bird sat on the sill and sang a song. The room felt fresh and free.":"s0242","The open window is a small joy. It links the house to the world outside.":"s0243","A winter morning is cold and still. The ground wears a white coat of frost.":"s0244","We breathe the sharp air and watch our breath. The sun rises slow and red.":"s0245","The winter morning is quiet and clean. It is a good time to think.":"s0246","A friendly spider built a web in the corner. It waited for the tiny fly with great care.":"s0247","The web shone in the light like a silver net. The spider was quiet and still.":"s0248","The friendly spider is a small helper. It eats the bug that bothers us.":"s0249","Reading is a basic skill that opens the door to knowledge. When we read, we meet new ideas and different ways of life.":"s0250","A good reader can learn from books, from the news and from the screen. Reading also trains the mind to think in order.":"s0251","In a busy world, reading gives us a quiet hour. It is one of the best habits a person can keep.":"s0252","Plants grow from a small seed in the soil. With water, light and warm air, the seed opens and sends a root down.":"s0253","A green stem rises and leaves spread to catch the sun. The plant makes its own food in the leaf.":"s0254","Growth is slow but steady. In time the plant may bloom and drop new seeds for the next spring.":"s0255","The water cycle moves the same water around the earth. The sun heats the river and the sea, and the water rises as vapor.":"s0256","High in the cold sky the vapor becomes cloud. When the cloud is heavy, the rain falls back to the ground.":"s0257","The rain feeds the stream and returns to the ocean. In this way water never disappears, it only changes form.":"s0258","To keep healthy, we need a simple plan each day. Eat more fruit and vegetables, drink water, and sleep for eight hours.":"s0259","Exercise makes the heart strong and the mind clear. A short walk after a meal is a good start.":"s0260","Health is not a single act but a habit. Small choices made often are what protect our body.":"s0261","We took a trip to the zoo on a sunny day. The first stop was the monkey hill, where the apes played with joy.":"s0262","Then we watched the tall giraffe and the heavy elephant. The children drew a picture of each animal.":"s0263","A trip to the zoo teaches us about nature. It also shows why we must protect wild life.":"s0264","The ocean covers most of our planet, yet it is in danger. Plastic waste floats on the surface and hurts the fish below.":"s0265","We can help by using less plastic and joining a beach clean up. Small acts by many people add up.":"s0266","Saving the ocean is saving ourselves. A clean sea means healthy food and a stable climate.":"s0267","Paper was first made in ancient China from the bark of a tree. The method slowly spread to the west over many centuries.":"s0268","Today paper is made in large mills from wood. We use it to write, to print and to pack.":"s0269","Paper seems common, but it changed human history. It let knowledge travel far and stay for a long time.":"s0270","Learning a language is more than words. It is a way to see how other people think and live.":"s0271","At first the sound is strange and the rule is hard. With daily practice the ear gets used to it.":"s0272","A language opens a door to friends across the world. The effort you make today pays back for a life time.":"s0273","Our solar system has one star and eight planets. The earth is the third planet from the sun and the only one with life we know.":"s0274","The big planets are made of gas, while the small ones are rock. They all move around the sun in a path.":"s0275","The solar system is vast and quiet. To study it is to learn our own small place in the universe.":"s0276","Good habits make school easier and happier. Pack the bag the night before and sleep early so the morning is calm.":"s0277","Listen in class, write the key point, and review a little each day. Do not leave work to the last minute.":"s0278","Habits are like seeds. Planted early, they grow into a steady and confident student.":"s0279"};
+const PHON_AUDIO={"k":"p0001","a":"p0002","t":"p0003","d":"p0004","o":"p0005","g":"p0006","s":"p0007","u":"p0008","n":"p0009","f":"p0010","i":"p0011","sh":"p0012","p":"p0013","ch":"p0014","ay":"p0015","b":"p0016","eye":"p0017","h":"p0018","oh":"p0019","tr":"p0020","ee":"p0021","gr":"p0022","oo":"p0023","st":"p0024","ar":"p0025","er":"p0026","l":"p0027","w":"p0028","aw":"p0029","ter":"p0030","m":"p0031","uh":"p0032","or":"p0033","ning":"p0034","eh":"p0035","ther":"p0036","ick":"p0037","cher":"p0038","um":"p0039","pyoo":"p0040","ri":"p0041","mem":"p0042","ber":"p0043","ni":"p0044","mull":"p0045","gar":"p0046","den":"p0047","stoo":"p0048","dent":"p0049","win":"p0050","ha":"p0051","pee":"p0052","tay":"p0053","bull":"p0054","fl":"p0055","ow":"p0056","im":"p0057","mi":"p0058","grant":"p0059","my":"p0060","gray":"p0061","shun":"p0062","paul":"p0063","see":"p0064","ih":"p0065","kah":"p0066","nuh":"p0067","mee":"p0068","suh":"p0069","sy":"p0070","tee":"p0071","kul":"p0072","op":"p0073","per":"p0074","too":"p0075","ben":"p0076","fit":"p0077","sig":"p0078","nif":"p0079","kuhnt":"p0080","in":"p0081","vyre":"p0082","uhn":"p0083","muhnt":"p0084","stab":"p0085","lish":"p0086","ev":"p0087","duhns":"p0088","fak":"p0089","tih":"p0090","fy":"p0091","prah":"p0092","cess":"p0093","rih":"p0094","kwire":"p0095","search":"p0096","spahnd":"p0097","struk":"p0098","dih":"p0099","vij":"p0100","uhl":"p0101","may":"p0102","jer":"p0103","meh":"p0104","thud":"p0105","prin":"p0106","pl":"p0107","kree":"p0108","ate":"p0109","gloh":"p0110","buhl":"p0111","lee":"p0112","guhl":"p0113","kuh":"p0114","myoo":"p0115","jen":"p0116","ray":"p0117","yoo":"p0118","nih":"p0119","vur":"p0120","fer":"p0121","en":"p0122","ed":"p0123","ig":"p0124","ocks":"p0125","c":"p0126","up":"p0127","us":"p0128","r":"p0129","it":"p0130","nay":"p0131","gay":"p0132","tie":"p0133","lie":"p0134","why":"p0135","no":"p0136","ho":"p0137","fo":"p0138","cl":"p0139","bay":"p0140","bee":"p0141","si":"p0142","muh":"p0143","nee":"p0144","sun":"p0145","bi":"p0146","kum":"p0147","koz":"p0148","air":"p0149","th":"p0150","un":"p0151","der":"p0152","ver":"p0153"};
 let _audioEl=null, _audioFallback=false;
 let _lastPlayMode="file";   // 本次播放用的是整句录音(file) 还是逐词真人(seq)
 function audioEl(){
   if(!_audioEl){ _audioEl=new Audio(); }
   return _audioEl;
 }
+let _playToken=0;
 function playFile(src, text, r, onend){
   const a=audioEl();
-  a.onerror=()=>{ a.onerror=null; speak(text,r,onend); };
+  /* 同一时刻只认「最后一次」播放请求：连续点发音时上一个会被新的 src 打断（AbortError），
+     这属于正常替换，不能当成失败去回退合成音——否则会莫名冒出机械音 */
+  const my=++_playToken;
+  a.onerror=()=>{ if(my!==_playToken) return; a.onerror=null; speak(text,r,onend); };
   a.src=src;
   a.playbackRate=Math.max(0.4, Math.min(1.2, r||1));
   const p=a.play();
-  if(p&&p.catch) p.catch(()=>speak(text,r,onend));
+  if(p&&p.catch) p.catch(e=>{ if(my!==_playToken) return; speak(text,r,onend); });
   return true;
 }
 function hasRealAudio(word){
@@ -4563,6 +4568,24 @@ function audioKind(word){
   const w=String(word||"").replace(/[^A-Za-z']/g,"").toLowerCase();
   return hasRealAudio(w)?"真人音":"合成音";
 }
+/* 音素 / 音节示范音：优先播放预生成的神经人声（audio/ph/），没有才回退到浏览器合成。
+   注意：这些音频本身已按慢速（-25%）生成，播放时语速别再压太低，否则拖沓。 */
+function phonKey(g){ return String(g||"").replace(/（[^）]*）/g,"").replace(/[ˈˌ]/g,"").trim(); }
+function hasPhonAudio(g){ const k=phonKey(g); return !!(k && PHON_AUDIO[k]); }
+function playPhon(g, r, onend){
+  if(settings.source!=="real") return false;
+  const k=phonKey(g), id=PHON_AUDIO[k];
+  if(!id) return false;
+  const acc=settings.accent==="uk"?"uk":"us";
+  _lastPlayMode="file";
+  return playFile(`audio/ph/${acc}/${id}.mp3`, k, r||0.85, onend);
+}
+function speakChunk(g, r, onend){
+  const k=phonKey(g);
+  if(!k){ if(onend) onend(); return; }
+  if(playPhon(k, r, onend)) return;
+  speak(k, r||0.45, onend);
+}
 
 /* ================= 发音引擎（浏览器本地语音合成，作为兜底） ================= */
 let voice=null;
@@ -4600,14 +4623,28 @@ function pickVoice(){
 function setVoice(uri){
   settings.voiceURI=uri||""; saveSettings(); pickVoice(); syncSettingsUI(); say("hello",0.9);
 }
+/* 合成音兜底时也要挑「最自然」的那一个：先按口音匹配，再按 Neural/Natural > 大厂 > 其它打分 */
+function bestVoice(){
+  const vs=(typeof speechSynthesis!=="undefined" && speechSynthesis.getVoices())||[];
+  const en=vs.filter(x=>/^en/i.test(x.lang||""));
+  if(!en.length) return null;
+  const lang=settings.accent==="uk"?"en-GB":"en-US";
+  return en.slice().sort((a,b)=>{
+    const la=(a.lang===lang?2:(/^en/i.test(a.lang)?1:0)), lb=(b.lang===lang?2:(/^en/i.test(b.lang)?1:0));
+    if(la!==lb) return lb-la;
+    return voiceScore(b)-voiceScore(a);
+  })[0];
+}
 function speak(text, r, onend){
   if(!("speechSynthesis" in window)){ alert("当前浏览器不支持语音合成，请使用 Edge 或 Chrome 打开"); if(onend) onend(); return; }
   const accLang=settings.accent==="uk"?"en-GB":"en-US";
-  const vs=speechSynthesis.getVoices();
+  const vs=speechSynthesis.getVoices()||[];
   const v= (settings.voiceURI && vs.find(x=>x.voiceURI===settings.voiceURI))
-        || vs.find(x=>x.lang===accLang) || vs.find(x=>/^en/i.test(x.lang)) || voice;
+        || bestVoice() || vs.find(x=>x.lang===accLang) || vs.find(x=>/^en/i.test(x.lang)) || voice;
   const u=new SpeechSynthesisUtterance(text);
-  u.lang=accLang; u.rate=r||defaultRate(); if(v)u.voice=v;
+  u.lang=(v&&v.lang)?v.lang:accLang;
+  /* 合成音天生偏机械：语速略降、音高微降，听感更接近真人 */
+  u.rate=r||defaultRate(); u.pitch=1.0; u.volume=1; if(v)u.voice=v;
   if(onend){ u.onend=onend; u.onerror=onend; }
   try{ if(speechSynthesis.speaking||speechSynthesis.pending) speechSynthesis.cancel(); }catch(e){}
   /* Chrome 坑：cancel() 后同一 tick 内 speak() 会把新语音一起取消（不发声且 onend 永不触发），
@@ -4702,7 +4739,7 @@ function syncSettingsUI(){
   if(ur) ur.classList.toggle("on", settings.source!=="tts");
   if(ut) ut.classList.toggle("on", settings.source==="tts");
   const st=document.getElementById("audioStat");
-  if(st) st.textContent=`已下载 ${AUDIO_US.length} 词单词音 / ${Object.keys(SENT_AUDIO).length} 条整句音`;
+  if(st) st.textContent=`已下载 ${AUDIO_US.length} 词单词音 / ${Object.keys(SENT_AUDIO).length} 条整句音 / ${Object.keys(PHON_AUDIO).length} 个音素音（均为真人·神经语音）`;
   ["auto","word","tts"].forEach(m=>{
     const b=document.getElementById("seg-sent-"+m);
     if(b) b.classList.toggle("on", (settings.sentMode||"auto")===m);
@@ -4752,12 +4789,22 @@ try{ progress=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ progress={};
 function saveProgress(){ try{ localStorage.setItem(KEY, JSON.stringify(progress)); }catch(e){} }
 function knownCount(){ return Object.values(progress).filter(s=>s==="k").length; }
 function resetProgress(){
-  if(confirm("确定要清空所有学习记录吗？")){ progress={}; checkin={}; learnLog={}; saveCheckin(); saveLearnLog(); daily=null; saveProgress(); render(); }
+  if(confirm("确定要清空所有学习记录吗？")){ progress={}; checkin={}; learnLog={}; saveCheckin(); saveLearnLog(); daily=null; planStore={date:"",plans:{}}; savePlanStore(); saveProgress(); render(); }
 }
 
 /* ================= 每日学习计划 + 打卡（背单词规律：定量 · 分级 · 复习） ================= */
 const DKEY="phonics_daily_v1", CKEY="phonics_checkin_v1", LKEY="phonics_learnlog_v1";
 let daily=null, checkin={};
+/* 今日计划仓：同一天可并存多套计划（级别 / 词量 / 考纲 / 留学分级 任一不同 = 不同计划）
+   每套计划各自记录 list（词表）与 done（本计划已标记的词），切换级别不会串进度 */
+let planStore={date:"", plans:{}};
+try{ const _ps=JSON.parse(localStorage.getItem(DKEY)); if(_ps && _ps.plans && typeof _ps.plans==="object") planStore=_ps; }catch(e){}
+function savePlanStore(){ try{ localStorage.setItem(DKEY, JSON.stringify(planStore)); }catch(e){} }
+/* 计划 key 只跟「词池」有关（级别 + 考纲 + 留学分级）：
+   改每日词量时保留已学进度，只重建词表；换级别/换考纲才是另一套计划，进度各自独立 */
+function curPlanKey(){
+  return [String(settings.level), String(settings.exam||"all"), String(settings.itGrade||"all")].join("|");
+}
 try{ checkin=JSON.parse(localStorage.getItem(CKEY))||{}; }catch(e){ checkin={}; }
 function saveCheckin(){ try{ localStorage.setItem(CKEY, JSON.stringify(checkin)); }catch(e){} }
 /* 学习日志：按日期记录当日实际学过的单词，供日/周/月测试抽取 */
@@ -4768,34 +4815,60 @@ function todayKey(){
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
 /* 今日任务：按所选级别 + 每日词量生成，优先未掌握词，已掌握词用于复习 */
-function getDaily(){
-  const tk=todayKey();
-  const same=(o)=>o && o.date===tk && String(o.level)===String(settings.level)
-                   && Number(o.count)===Number(settings.dailyCount) && String(o.exam||"all")===String(settings.exam)
-                   && String(o.it||"all")===String(settings.itGrade);
-  if(same(daily)) return daily;
-  let saved=null; try{ saved=JSON.parse(localStorage.getItem(DKEY)); }catch(e){}
-  if(same(saved)){ daily=saved; return daily; }
+function buildPlanList(){
   const pool=WORDS.filter(w=>(settings.level==="all" || String(w.lv)===String(settings.level))
                            && (settings.exam==="all" || (w.exam||[]).includes(settings.exam))
                            && (settings.itGrade==="all" || w.it===settings.itGrade));
   const base=pool.length?pool:WORDS.filter(w=>settings.level==="all" || String(w.lv)===String(settings.level));
   const fresh=base.filter(w=>progress[w.w]!=="k");      // 新词优先
   const review=pool.filter(w=>progress[w.w]==="k");     // 已掌握词用于复习
-  const list=fresh.concat(review).slice(0, settings.dailyCount).map(w=>w.w);
+  return fresh.concat(review).slice(0, settings.dailyCount).map(w=>w.w);
+}
+function getDaily(){
+  const tk=todayKey();
+  if(planStore.date!==tk){ planStore={date:tk, plans:{}}; savePlanStore(); }
+  const pk=curPlanKey();
+  let p=planStore.plans[pk];
+  if(!p){
+    p={list:buildPlanList(), done:[], count:Number(settings.dailyCount)};
+    planStore.plans[pk]=p; savePlanStore();
+  }else if(Number(p.count)!==Number(settings.dailyCount)){
+    /* 只改了每日词量：在原有词表上「补足 / 裁剪」，不要把已学过的词换掉，进度照旧保留 */
+    const n=Number(settings.dailyCount), old=Array.isArray(p.list)?p.list.slice():[];
+    if(n<=old.length){ p.list=old.slice(0,n); }
+    else{
+      const have=new Set(old);
+      p.list=old.concat(buildPlanList().filter(w=>!have.has(w))).slice(0,n);
+    }
+    p.count=n; savePlanStore();
+  }
+  if(!Array.isArray(p.done)) p.done=[];
   daily={date:tk, level:settings.level, count:settings.dailyCount, exam:settings.exam,
-         it:settings.itGrade, list, done:[]};
-  try{ localStorage.setItem(DKEY, JSON.stringify(daily)); }catch(e){}
+         it:settings.itGrade, list:p.list, done:p.done};
   return daily;
+}
+/* 本计划已完成数：只统计「属于当前词表」的已学词，避免换级别后沿用旧进度 */
+function planDoneCount(d){
+  const arr=(d && d.done)||[];
+  return arr.filter(w=>d.list.indexOf(w)>=0).length;
 }
 function todayStat(){
   const d=getDaily(), tk=todayKey();
   const c=checkin[tk]||{words:false, read:false, list:[]};
-  return {total:d.list.length, learned:c.list?c.list.length:d.done.length, wordsDone:!!c.words, readDone:!!c.read};
+  const learned=planDoneCount(d);
+  const wordsDone=d.list.length>0 && learned>=d.list.length;
+  if(wordsDone && !c.words){ c.words=true; checkin[tk]=c; saveCheckin(); }
+  return {total:d.list.length, learned, wordsDone, readDone:!!c.read, dayList:(c.list||[]).length};
 }
 /* 记录今日已学单词 */
 function markLearned(w){
-  const d=getDaily(), tk=todayKey();
+  const d=getDaily(), tk=todayKey(), pk=curPlanKey();
+  const p=planStore.plans[pk];
+  if(p){
+    if(!Array.isArray(p.done)) p.done=[];
+    if(!p.done.includes(w)){ p.done.push(w); savePlanStore(); }
+    d.done=p.done;
+  }
   const c=checkin[tk]||{words:false, read:false, list:[]};
   if(!c.list.includes(w)) c.list.push(w);
   checkin[tk]=c; saveCheckin();
@@ -4803,7 +4876,7 @@ function markLearned(w){
   if(!learnLog[tk]) learnLog[tk]=[];
   if(!learnLog[tk].includes(w)) learnLog[tk].push(w);
   saveLearnLog();
-  if(c.list.length>=d.list.length){ c.words=true; checkin[tk]=c; saveCheckin(); }
+  if(p && planDoneCount(d)>=d.list.length && !c.words){ c.words=true; checkin[tk]=c; saveCheckin(); }
 }
 function finishReading(){
   const tk=todayKey();
@@ -5003,7 +5076,7 @@ function sylRowHTML(wd){
     `${i>0?'<span class="syl-dot">·</span>':''}
      <span class="syl-chip${i===wd.stress?' stressed':''}"
         title="${i===wd.stress?'重读音节':'非重读音节（弱读）'} · 点击听这个音节"
-        onclick="speak('${s[0].toLowerCase()}',0.5)">
+        onclick="speakChunk('${s[0].toLowerCase()}',0.85)">
        <b>${s[0]}</b><small>/${i===wd.stress?"ˈ":""}${s[1]}/</small>
      </span>`).join("");
   return `<div class="syl-row">🎵 音节切分：${chips}
@@ -5213,7 +5286,7 @@ function renderRules(){
           <div class="ri-n">${d.syls.join("·")} <span style="font-weight:400;color:var(--sub);font-size:13px">· 点🔊听整词</span>
             <button class="btn btn-ghost" style="padding:1px 10px;font-size:12px;margin-left:6px" onclick="say('${d.w}',0.6)">🔊 ${d.w}</button></div>
           <div class="ri-d" style="font-family:'Segoe UI',Arial;font-size:17px">
-            ${d.syls.map((s,i)=>`<span class="syl-chip${i===d.stress?' stressed':''}" style="cursor:pointer" onclick="speak('${s}',0.5)">
+            ${d.syls.map((s,i)=>`<span class="syl-chip${i===d.stress?' stressed':''}" style="cursor:pointer" onclick="speakChunk('${s}',0.85)">
               <b>${(i===d.stress?"ˈ":"")}${s}</b></span>`).join(' <span class="syl-dot">·</span> ')}
           </div>
           <div class="ri-ex">${d.note}</div>
@@ -5429,6 +5502,26 @@ function renderLearn(){
   const d=getDaily(), s=todayStat();
   /* 恢复到上次学习位置（刷新/重开页面不丢进度） */
   if(!s.wordsDone && idx<s.learned) idx=s.learned;
+  /* 筛选组合下没有单词 → 给明确引导，而不是显示「0 个单词已完成」 */
+  if(!d.list.length){
+    document.getElementById("progText").textContent="今日 0 / 0";
+    document.getElementById("progBar").style.width="0%";
+    document.getElementById("progPct").textContent="当前筛选无单词";
+    document.getElementById("learnCard").innerHTML=`
+      <div class="quiz-done">
+        <div style="font-size:42px">🔍</div>
+        <div style="font-size:20px;font-weight:700;margin-top:8px">当前筛选条件下没有单词</div>
+        <p style="color:var(--sub);margin-top:10px">
+          级别「${LEVEL_NAME[settings.level]||settings.level}」＋考纲「${settings.exam}」＋留学分级「${settings.itGrade}」的组合暂时没有匹配词。
+        </p>
+        <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-main" onclick="setLevel('all')">↺ 级别改「全部」</button>
+          <button class="btn btn-ghost" onclick="setExam('all')">考纲改「全部」</button>
+          <button class="btn btn-ghost" onclick="setItGrade('all')">留学分级改「全部」</button>
+        </div>
+      </div>`;
+    return;
+  }
   /* 今日任务已完成 → 展示完成页 */
   if(s.wordsDone || idx>=d.list.length){
     document.getElementById("progText").textContent=`今日 ${d.list.length} / ${d.list.length}`;
@@ -5502,7 +5595,7 @@ function chunkHeroHTML(wd){
      <span class="chunk${vk?' vmark':''}" id="chunk-${i}" style="color:${CHUNK_COLORS[i%CHUNK_COLORS.length]}"
         ${vk?`data-v="${vk}"`:''}
         title="点击听这个音：${c[1]}${vk?`　｜　鼠标悬停查看「${vk}」的全部发音`:''}"
-        onclick="speak('${c[2].replace(/'/g,"")}',0.45)">
+        onclick="speakChunk('${c[2].replace(/'/g,"")}',0.9)">
        <span class="lt">${c[0]}</span>
        <span class="ip">${c[1]}</span>
        ${c[3]?`<span class="ex">${c[3].split(" · ").join("<br>")}</span>`:''}
@@ -5514,17 +5607,19 @@ function chunkHeroHTML(wd){
 function blendDemo(w){
   const wd=WORDS.find(x=>x.w===w);
   blendTimers.forEach(clearTimeout); blendTimers=[];
-  speechSynthesis.cancel();
-  /* 点击拼读时才把完整单词拆分为彩色音素卡片 */
+  try{ speechSynthesis.cancel(); }catch(e){}
+  try{ const a=audioEl(); a.pause(); a.currentTime=0; }catch(e){}
+  /* 点击拼读时才把完整单词拆分为彩色音卡片 */
   const hero=document.getElementById("wordHero");
   if(hero) hero.innerHTML=chunkHeroHTML(wd);
-  const gap=900;
+  /* 音素示范音是真人/神经录音（约 0.6~1.2s），间隔留够才不会被下一个音掐断 */
+  const gap=1100;
   wd.chunks.forEach((c,i)=>{
     blendTimers.push(setTimeout(()=>{
       wd.chunks.forEach((_,j)=>document.getElementById("chunk-"+j)?.classList.remove("active"));
       document.getElementById("chunk-"+i)?.classList.add("active");
       document.getElementById("step-"+i)?.classList.add("hot");
-      speak(c[2],0.45);
+      speakChunk(c[2],0.9);
     }, i*gap+200));
     blendTimers.push(setTimeout(()=>{
       document.getElementById("step-"+i)?.classList.remove("hot");
@@ -5564,14 +5659,20 @@ function continueLearning(){
   if(!more.length){ alert("这个级别的新词都学完啦！可以换个级别，或去读文章、做测试巩固～"); return; }
   const oldLen=d.list.length;
   d.list=d.list.concat(more); daily=d;
-  try{ localStorage.setItem(DKEY, JSON.stringify(daily)); }catch(e){}
-  const tk=todayKey(), c=checkin[tk]||{words:false,read:false,list:[]};
-  c.words=false; checkin[tk]=c; saveCheckin();
+  const _p=planStore.plans[curPlanKey()];
+  if(_p){ _p.list=d.list; savePlanStore(); }
   idx=oldLen;   /* 从第一个新词接着学 */
   render();
 }
 function prevWord(){ idx=Math.max(idx-1,0); render(); }
-function restartToday(){ idx=0; const tk=todayKey(); const c=checkin[tk]||{words:false,read:false,list:[]}; c.list=[]; c.words=false; checkin[tk]=c; saveCheckin(); render(); }
+function restartToday(){
+  idx=0;
+  const p=planStore.plans[curPlanKey()];
+  if(p){ p.done=[]; savePlanStore(); }
+  if(daily) daily.done=[];
+  const tk=todayKey(); const c=checkin[tk]||{words:false,read:false,list:[]};
+  c.words=false; checkin[tk]=c; saveCheckin(); render();
+}
 function goRead(){ document.querySelector('nav button[data-tab=read]').click(); }
 
 /* ================= 本词测试（每词 3-5 题，自动从词库数据生成） ================= */

@@ -2,7 +2,7 @@
    离线优先的教学型 PWA：页面网络优先（保证总是拿到最新版），
    静态资源「缓存优先 + 后台更新」，断网时也能继续学习。
    更新策略：修改上面 CACHE 版本号即可让旧缓存失效。            */
-const CACHE = "pindu-v1";
+const CACHE = "pindu-v2";   // v2：新增例句/段落/音素真人语音，重置缓存以拉取新音频
 const CORE = ["./", "index.html", "account.js", "manifest.webmanifest", "icons/icon-180.png"];
 
 self.addEventListener("install", function (e) {
