@@ -1,0 +1,30 @@
+# 依赖与构建产物
+node_modules/
+ios-pack/node_modules/
+ios-pack/ios/App/Pods/
+ios-pack/ios/App/build/
+ios-pack/ios/App/output/
+ios-pack/build/
+ios-pack/ios/App/DerivedData/
+xcuserdata/
+
+# 注意：ios-pack/www/audio/ 与 ios-pack/ios/App/App/public/ 是同一份音频的两份拷贝。
+# 为避免仓库体积翻倍，已在下方 unignore www/audio（源），并忽略 public（由 npx cap sync 自动生成）。
+ios-pack/ios/App/App/public/
+
+# 但音频本体（38MB，1731 个 mp3）是 App 的核心资源，必须入库
+!ios-pack/www/audio/
+!ios-pack/www/icons/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# 敏感信息（这里没有，但习惯上加着）
+*.mobileprovision
+*.p12
+*.cer
+*.key

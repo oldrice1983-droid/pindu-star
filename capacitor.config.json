@@ -1,0 +1,16 @@
+{
+  "appId": "com.pinduxingqiu.side",
+  "appName": "拼读星球",
+  "webDir": "www",
+  "backgroundColor": "#0a9f5b",
+  "ios": {
+    "backgroundColor": "#0a9f5b",
+    "contentInset": "always",
+    "scrollEnabled": true,
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  }
+}
