@@ -494,8 +494,8 @@
   }
   .rt-s{display:none;}
   @media (max-width:640px){
-    /* 手机：5 个等宽短标签全部可见，不滑动 */
-    .rules-tabs{display:grid; grid-template-columns:repeat(5,1fr); gap:3px; overflow:visible;}
+    /* 手机：6 个等宽短标签全部可见，不滑动 */
+    .rules-tabs{display:grid; grid-template-columns:repeat(6,1fr); gap:3px; overflow:visible;}
     .rules-tabs button{padding:9px 2px; text-align:center; font-size:13px; white-space:normal;}
     .rules-tabs button.on{box-shadow:0 1px 3px rgba(30,60,45,.22);}
     .rt-l{display:none;}
@@ -617,17 +617,16 @@
       <button class="gear" title="学习设置" onclick="openSettings()">⚙</button>
     </div>
     <nav>
-      <button data-tab="learn" class="active">📖 学单词</button>
-      <button data-tab="rules">🔡 拼读规则</button>
+      <button data-tab="rules" class="active">📚 学拼读</button>
+      <button data-tab="learn">📖 学单词</button>
       <button data-tab="read">📰 读文章</button>
-      <button data-tab="quiz">🎯 拼读测验</button>
-      <button data-tab="vocab">📚 我的词库</button>
+      <button data-tab="quiz">🎯 测试</button>
     </nav>
   </div>
 </header>
 
 <main>
-  <section id="tab-learn">
+  <section id="tab-learn" style="display:none">
     <div class="progress-wrap">
       <span id="progText"></span>
       <div class="progress-bar"><i id="progBar"></i></div>
@@ -640,7 +639,7 @@
     </div>
   </section>
 
-  <section id="tab-rules" style="display:none">
+  <section id="tab-rules">
     <div class="card" id="rulesCard"></div>
   </section>
 
@@ -765,6 +764,26 @@
 
 <div id="tip"></div>
 <div id="vTip"></div>
+
+<!-- 账号命名空间 shim：必须在主脚本之前执行，使每个账号的 localStorage 数据完全隔离 -->
+<script>
+(function(){
+  try{
+    var RAW=window.localStorage, SYS="pd_sys_";
+    function cur(){ try{ return RAW.getItem(SYS+"cur"); }catch(e){ return null; } }
+    function ns(){ var u=cur(); return u?("pd_u_"+u+"_"):"pd_g_"; }
+    var SHIM={
+      getItem:function(k){ try{ return RAW.getItem(k.indexOf(SYS)===0?k:ns()+k); }catch(e){ return null; } },
+      setItem:function(k,v){ try{ return RAW.setItem(k.indexOf(SYS)===0?k:ns()+k, v); }catch(e){} },
+      removeItem:function(k){ try{ return RAW.removeItem(k.indexOf(SYS)===0?k:ns()+k); }catch(e){} },
+      clear:function(){ try{ var d=[]; for(var i=0;i<RAW.length;i++){ var k=RAW.key(i); if(k&&k.indexOf(ns())===0) d.push(k); } d.forEach(function(k){ RAW.removeItem(k); }); }catch(e){} },
+      key:function(i){ var n=0; for(var j=0;j<RAW.length;j++){ var k=RAW.key(j); if(k&&(k.indexOf(ns())===0||k.indexOf(SYS)===0)){ if(n===i) return k.indexOf(ns())===0?k.slice(ns().length):k; n++; } } return null; },
+      get length(){ var n=0; for(var j=0;j<RAW.length;j++){ var k=RAW.key(j); if(k&&(k.indexOf(ns())===0||k.indexOf(SYS)===0)) n++; } return n; }
+    };
+    Object.defineProperty(window,"localStorage",{value:SHIM,configurable:true,writable:false});
+  }catch(e){ /* 旧浏览器不支持重定义时退化为共享存储（注册仍可用） */ }
+})();
+</script>
 
 <script>
 /* ================= 词库数据（本地内置，无需联网）
@@ -2409,6 +2428,23 @@ const REDUCTION=[
  ["-tion / -sion","读 /ʃən/ /ʒən/","/ʃən/","ˈna·tion、ˌin·forˈma·tion"],
  ["次重读音节（ˌ）","仍读强式元音，不弱化 —— 这正是次重音存在的意义","强式元音","ˌop·porˈtu·ni·ty 的 op → /ɑː/（不是 /ə/）"],
  ["例外：双重音词","少数长词有两个近乎相等的重音","两强式","ˌChiˈnese、ˌunˈknown"]
+];
+
+/* ===== 切分法（音节切分规则 + 特殊规则） ===== */
+const SYLDIV_RULES=[
+ {n:"两辅音夹在两元音之间 → 从中间切（VC / CV）", d:"两个元音之间若有两个辅音，通常从两个辅音中间切开。左边闭音节元音读短音，右边开音节元音读长音。", ex:"let·ter、hap·pen、win·der、bas·ket"},
+ {n:"一个辅音夹在两元音之间 → 辅音归后（V / CV）", d:"两个元音之间只有一个辅音时，这个辅音划给后面的音节（V/CV）。前面的元音因“被隔开后成开音节”常读长音。", ex:"o·pen、e·ven、ro·bot、u·nit"},
+ {n:"元音组合（相邻元音）不切", d:"ai / ee / oa / oo / ou 等两个字母发一个音，算一个音节单位，中间不能切。", ex:"rain、boat、see、food、house"},
+ {n:"辅音连缀不拆开", d:"bl / cl / str / thr / sp 等连缀里每个字母都发音，但它们是一个“拼读块”，切分时整体保留在一侧。", ex:"str·eet、bl·ue、th·ree、spr·ing"},
+ {n:"前缀 / 后缀自成一块", d:"可拆分的词缀先单独切开，再处理词根。前缀永远不重读，后缀按自身规则处理。", ex:"un·happy、care·ful、re·play、teach·er"},
+ {n:"辅音 + le 自成音节（C+le）", d:"词尾“辅音 + le”时，这个辅音和 le 单独组成一个轻音节，前面从辅音前切。", ex:"ta·ble、lit·tle、pur·ple、can·dle"}
+];
+const SYLDIV_SPECIAL=[
+ {n:"ck / tch / dge 不拆", d:"ck、tch、dge 是“一个音两个字母”的拼写，必须整体保留，不能从中间切。", ex:"clock → cl·ock、watch → wat·ch、bridge → bri·dge"},
+ {n:"双写辅音表示前面是闭音节", d:"拼写里出现双写辅音（pp / tt / dd / mm / nn 等），说明前一个音节是闭音节、元音读短音，切口就在双写辅音之间。", ex:"mid·dle、bet·ter、com·mon、sup·per"},
+ {n:"-tion / -sion 前的辅音归后", d:"tion / sion 是一个整体音节块（读 /ʃən/），它前面那个辅音划给它，不向前切。", ex:"na·tion、in·for·ma·tion、vi·sion"},
+ {n:"-ious / -uous 等按元音切", d:"以 -ious、-uous 结尾时，按“辅音 + ious”划分，i 之前若有辅音则归后。", ex:"cur·i·ous、con·tin·u·ous"},
+ {n:"词尾元音 + y 不切", d:"以 -y 结尾且 y 前是辅音时，y 与前面元音按组合或单独成音节处理，不要从 y 前硬切出无意义块。", ex:"ha·ppy、ba·by、car·ry"}
 ];
 
 /* ===== 旧词补充重音规则（新词已在数据中直接标注 sRule / stress2） ===== */
@@ -4217,18 +4253,160 @@ Object.assign(DICT,DICT_EXTRA1,DICT_EXTRA2,DICT_EXTRA3,DICT_EXTRA4,DICT_EXTRA5);
 
 /* ================= 阅读文章：美国移民主题（本地内置） ================= */
 const ARTICLES=[
- {id:"imm-1", lv:1, title:"A New Home in America", titleZh:"在美国的新家",
-  en:"Many people come to America from other countries. They are called immigrants.\nThey travel by ship or by plane. They bring their clothes, photos and stories.\nIn America they work hard and go to school. They want a better life for their family.",
-  zh:"许多人从其他国家来到美国。他们被称为移民。\n他们乘船或乘飞机旅行。他们带着自己的衣服、照片和故事。\n在美国，他们努力工作、上学。他们希望家人过上更好的生活。"},
- {id:"imm-2", lv:2, title:"Ellis Island", titleZh:"埃利斯岛",
-  en:"From 1892 to 1954, more than twelve million immigrants came to New York. First they saw the Statue of Liberty. Then they went to Ellis Island.\nDoctors checked their eyes and health. Officers asked their names and jobs. Most people stayed for a few hours.\nAfter that, they could start a new life in America. Today Ellis Island is a museum.",
-  zh:"1892 至 1954 年，超过一千二百万移民来到纽约。他们首先看到自由女神像，然后前往埃利斯岛。\n医生检查他们的眼睛和健康状况，官员询问他们的姓名和职业。大多数人只停留几个小时。\n在那之后，他们就能在美国开始新生活。如今埃利斯岛是一座博物馆。"},
- {id:"imm-3", lv:3, title:"The Melting Pot", titleZh:"大熔炉",
-  en:"America is often called a melting pot, because people from many countries live and work together there. Immigrants bring their languages, food, music and holidays.\nIn big cities you can hear Spanish, Chinese or Arabic on the street. Their children often speak English at school and another language at home.\nThis mix of cultures has changed American food, art and sports. But the journey is not always easy. Many immigrants miss their old country, and it takes years to feel at home.",
-  zh:"美国常被称为\"大熔炉\"，因为来自许多国家的人在那里共同生活和工作。移民带来了自己的语言、食物、音乐和节日。\n在大城市的街道上，你能听到西班牙语、中文或阿拉伯语。他们的孩子常在学校说英语，在家说另一种语言。\n这种文化融合改变了美国的饮食、艺术和体育。但这段旅程并不总是轻松的。许多移民思念故土，需要很多年才能真正有家的感觉。"},
- {id:"imm-4", lv:4, title:"Why People Migrate", titleZh:"人们为何迁移",
-  en:"People migrate for many reasons. One major factor is the economy: many immigrants move because they want jobs and new opportunities.\nAnother factor is society and culture. Some people move to join family members who established a community in a new country. A community can help an individual find work, learn the language and understand the legal process.\nGovernment policy also matters. Immigration policy decides who may enter, and what evidence or documents they require. A significant change in policy can affect the whole global structure of migration.\nMigration has created a generation of families with roots in more than one country. Research shows that immigration brings benefits to the economy, changes the environment of cities, and is now a major principle of modern life.",
-  zh:"人们迁移的原因有很多。一个主要因素是经济：许多移民搬家是为了寻找工作和新机会。\n另一个因素是社会与文化。有些人搬去和家人团聚——家人已在新国家建立起一个社区。社区可以帮助个人找到工作、学习语言、了解法律程序。\n政府政策也很重要。移民政策决定谁可以入境，以及他们需要什么证据或文件。政策的重大变化会影响全球移民的整体结构。\n迁移造就了根植于不止一个国家的整整一代家庭。研究表明，移民为经济带来益处，改变着城市的环境，并已成为现代生活的一条重要原则。"}
+ /* ===== L1 入门（短元音 CVC） ===== */
+ {id:"a01", lv:1, title:"The Cat and the Hat", titleZh:"猫和帽子",
+  en:"A cat sat on a mat. The cat had a red hat.\nThe hat fell on the cat. The cat ran to the rat.\nWe see the cat and the hat. The rat is in the bag.",
+  zh:"一只猫坐在垫子上。这只猫有一顶红帽子。\n帽子掉到了猫身上。猫跑向老鼠。\n我们看见猫和帽子。老鼠在袋子里。"},
+ {id:"a02", lv:1, title:"Ben and the Pen", titleZh:"本和钢笔",
+  en:"Ben has a red pen. Ben set the pen on the desk.\nJen got the pen and gave it back. Ben said thank you.\nBen and Jen see the pen. It is a big red pen.",
+  zh:"本有一支红钢笔。本把笔放在书桌上。\n珍拿起笔还给了他。本说了谢谢。\n本和珍看着笔。这是一支红色的大笔。"},
+ {id:"a03", lv:1, title:"The Big Pig", titleZh:"大猪",
+  en:"A big pig sat in the pit. The pig is wet and sick.\nThe kid hid the pig with a stick. The pig is glad.\nWe see the big pig sit. The pig is in the mud.",
+  zh:"一头大猪坐在坑里。这猪又湿又病。\n小孩用棍子把猪藏起来。猪很高兴。\n我们看见大猪坐着。猪在泥里。"},
+ {id:"a04", lv:1, title:"The Red Fox", titleZh:"红狐",
+  en:"A red fox got a box. The box has a top and a lock.\nThe fox shot the rock with a sock. The dog can not stop.\nWe see the red fox run. The fox is on the log.",
+  zh:"一只红狐得到一个盒子。盒子有盖子和锁。\n狐狸用袜子扔石头。狗停不下来。\n我们看见红狐跑。狐狸在木头上。"},
+ {id:"a05", lv:1, title:"The Sun and the Bug", titleZh:"太阳和虫子",
+  en:"The sun is up. A bug is on the cup.\nThe bug dug a hole under the rug. The sun is hot.\nWe see the bug hum. The sun is fun.",
+  zh:"太阳升起来了。一只虫子在杯子上。\n虫子在毯子下挖了个洞。太阳很热。\n我们听见虫子嗡嗡。太阳真好。"},
+ {id:"a06", lv:1, title:"A Cat in a Bag", titleZh:"袋子里的猫",
+  en:"A cat is in a bag. The bag is on a rag.\nThe cat ran to the van and the fan. The man can see.\nWe see the cat nap. The bag is flat.",
+  zh:"一只猫在袋子里。袋子在破布上。\n猫跑向货车和风扇。男人能看见。\n我们看见猫打盹。袋子扁了。"},
+ {id:"a07", lv:1, title:"The Wet Pet", titleZh:"湿漉漉的宠物",
+  en:"My pet is wet. The pet met a net and a jet.\nThe vet got the pet and let it rest. The pet is best.\nWe see the wet pet. The pet is on the step.",
+  zh:"我的宠物湿了。宠物遇到一张网和一架喷气飞机。\n兽医抱起宠物让它休息。宠物最可爱。\n我们看见湿漉漉的宠物。宠物在台阶上。"},
+ {id:"a08", lv:1, title:"Tim the Kid", titleZh:"小孩蒂姆",
+  en:"Tim is a kid. Tim did a bid and a rid.\nThe kid hid a lid on the lid of a bin. Tim is slim.\nWe see Tim sit. Tim is a good kid.",
+  zh:"蒂姆是个小孩。蒂姆做了一次投标和一次骑马。\n小孩把盖子藏在箱子的盖上。蒂姆很苗条。\n我们看见蒂姆坐着。蒂姆是个好孩子。"},
+ {id:"a09", lv:1, title:"The Hot Pot", titleZh:"热锅",
+  en:"The pot is hot. The dog got a dot on the spot.\nThe mom got the pot and the cot. The pot is not lot.\nWe see the hot pot. The dog is on the rock.",
+  zh:"锅很烫。狗在地点上弄了个点。\n妈妈拿起了锅和小床。锅不算大。\n我们看见热锅。狗在石头上。"},
+ {id:"a10", lv:1, title:"The Cub and the Tub", titleZh:"幼兽和浴缸",
+  en:"A cub is in the tub. The tub has a sub and a club.\nThe cub rubbed the hub with a grub. The cub is glad.\nWe see the cub hug. The tub is full.",
+  zh:"一只幼兽在浴缸里。浴缸里有潜水和俱乐部。\n幼兽用虫子在轮毂上擦。幼兽很高兴。\n我们看见幼兽拥抱。浴缸满了。"},
+ {id:"a11", lv:1, title:"Six Kids", titleZh:"六个孩子",
+  en:"Six kids sit on a fix. The kids mix a six and a tick.\nThe kids pick a stick and a brick. The milk is rich.\nWe see six kids. The kids are quick.",
+  zh:"六个孩子坐在一个固定物上。孩子们混了六和 tick。\n孩子们捡起棍子和砖。牛奶很浓。\n我们看见六个孩子。孩子们很快。"},
+ {id:"a12", lv:1, title:"The Map and the Cap", titleZh:"地图和帽子",
+  en:"A map is on a cap. The cap has a lap and a gap.\nThe man map a tap on the trap. The cat can nap.\nWe see the map and cap. The man is glad.",
+  zh:"一张地图在一顶帽子上。帽子有膝盖和缝隙。\n男人在陷阱上画了一个龙头。猫能打盹。\n我们看见地图和帽子。男人很高兴。"},
+ /* ===== L2 基础（长元音 / 辅音组合 / r 音节） ===== */
+ {id:"a13", lv:2, title:"The Blue Plane", titleZh:"蓝色飞机",
+  en:"A blue plane came from the same name. Kate gave the plane a frame.\nThe plane flew over the lake and the game. It was a great day.\nWe see the blue plane. It made a flame.",
+  zh:"一架蓝色飞机来自同一个名字。凯特给飞机装了框架。\n飞机飞过湖和游戏场。那是美好的一天。\n我们看见蓝色飞机。它喷出火焰。"},
+ {id:"a14", lv:2, title:"My Nice Bike", titleZh:"我的好自行车",
+  en:"I have a nice bike. Mike rides the bike to the like.\nThe bike is white and light. We like the ride.\nWe see my nice bike. Mike is on the side.",
+  zh:"我有一辆好自行车。迈克骑车去喜欢的地方。\n自行车又白又轻。我们喜欢骑行。\n我们看见我的好车。迈克在旁边。"},
+ {id:"a15", lv:2, title:"A Rose and a Note", titleZh:"玫瑰和便条",
+  en:"A rose grew by the nose. Joe wrote a note with hope.\nThe note told of a globe and a rope. The rose is in the scope.\nWe see a rose and note. Joe can cope.",
+  zh:"一朵玫瑰长在鼻子旁。乔怀着希望写了便条。\n便条讲了一个地球和一根绳。玫瑰在视野里。\n我们看见玫瑰和便条。乔能应付。"},
+ {id:"a16", lv:2, title:"The Cute Mule", titleZh:"可爱的骡子",
+  en:"A cute mule ate a cube. June rode the mule to the tube.\nThe mule is huge and rude. We excused the mood.\nWe see the cute mule. The tube is in the use.",
+  zh:"一只可爱的骡子吃方块。琼骑骡子去管子那里。\n骡子又大又粗鲁。我们原谅了这情绪。\n我们看见可爱的骡子。管子在被使用。"},
+ {id:"a17", lv:2, title:"The Green Tree", titleZh:"绿树",
+  en:"A green tree stands by the sea. We see three bees on the leaf.\nThe queen ate a piece of cheese. The sheep fell asleep.\nWe see the green tree. The breeze is free.",
+  zh:"一棵绿树立在海边。我们看见三只蜜蜂在叶上。\n女王吃了一块奶酪。羊睡着了。\n我们看见绿树。微风自由。"},
+ {id:"a18", lv:2, title:"The Brown Bear", titleZh:"棕熊",
+  en:"A brown bear sat on a chair. The bear wore a square and a pair.\nThe bear shared a care with a hare. The air is fair.\nWe see the brown bear. The bear is rare.",
+  zh:"一只棕熊坐在椅子上。熊戴着方块和一对。\n熊把关怀分给了野兔。空气清新。\n我们看见棕熊。这只熊很少见。"},
+ {id:"a19", lv:2, title:"The Star in the Sky", titleZh:"天上的星",
+  en:"A star is in the dark sky. The car parked by the bar.\nThe guitar played a far song. We are smart and bright.\nWe see the star. The sky is our start.",
+  zh:"一颗星在黑暗的天空。车停在酒吧旁。\n吉他弹了一首遥远的歌。我们聪明又明亮。\n我们看见星星。天空是我们的起点。"},
+ {id:"a20", lv:2, title:"The Smart Card", titleZh:"聪明的卡片",
+  en:"A smart card is in the yard. The guard kept the card hard.\nThe bard sang of a garden and a lard. We regard the start.\nWe see the smart card. The card is a part.",
+  zh:"一张聪明的卡片在院子里。守卫把卡片保护得牢牢的。\n吟游诗人唱了花园和猪油。我们重视开端。\n我们看见聪明的卡片。卡片是一部分。"},
+ {id:"a21", lv:2, title:"A Small Storm", titleZh:"小风暴",
+  en:"A small storm blew the plant. The glass splashed on the branch.\nThe clock struck with a crash. We saw a flash.\nWe see a small storm. The grass is fresh.",
+  zh:"一场小风暴吹动了植物。玻璃溅到树枝上。\n钟声伴随破碎响起。我们看见一道闪光。\n我们看见小风暴。草很清新。"},
+ {id:"a22", lv:2, title:"The Fresh Fish", titleZh:"新鲜的鱼",
+  en:"A fresh fish swam in the dish. The ship wished for a push.\nThe brush washed the cash. We finished the rush.\nWe see the fresh fish. The fish is a wish.",
+  zh:"一条鲜鱼在盘里游。船希望被推一下。\n刷子洗了现金。我们结束了匆忙。\n我们看见鲜鱼。鱼是个愿望。"},
+ {id:"a23", lv:2, title:"The White Whale", titleZh:"白鲸",
+  en:"A white whale sang a song. The whale went wrong all along.\nThe wing of a swing was strong. We belong to the throng.\nWe see the white whale. The whale is a king.",
+  zh:"一只白鲸唱了一首歌。鲸鱼一路都错了。\n秋千的翼很结实。我们属于人群。\n我们看见白鲸。鲸鱼像国王。"},
+ {id:"a24", lv:2, title:"The Quiet Queen", titleZh:"安静的女王",
+  en:"A quiet queen sat on a bench. The queen ate a quilt and a quench.\nThe quest was quick and cheap. We kept the link.\nWe see the quiet queen. The queen is unique.",
+  zh:"一位安静的女王坐在长椅上。女王吃了被子和止渴物。\n探索又快又便宜。我们保持联系。\n我们看见安静的女王。女王很独特。"},
+ {id:"a25", lv:2, title:"A Cold Wind", titleZh:"冷风",
+  en:"A cold wind blew the gold. The child held a fold.\nThe old told a story of bold. We sold the mold.\nWe see a cold wind. The wind is told.",
+  zh:"冷风吹动了金色。孩子握着一个褶。\n老人讲了一个勇敢的故事。我们卖掉了模具。\n我们看见冷风。风被诉说。"},
+ {id:"a26", lv:2, title:"The Bright Light", titleZh:"明亮的光",
+  en:"A bright light lit the night. The flight was in sight.\nThe right height was a delight. We might take a bite.\nWe see the bright light. The light is a sight.",
+  zh:"明亮的光照亮了夜。飞行在视野中。\n合适的高度是乐事。我们也许咬一口。\n我们看见明亮的光。光是一景。"},
+ /* ===== L3 进阶（多音节 / 弱读） ===== */
+ {id:"a27", lv:3, title:"A Happy Family", titleZh:"幸福的家庭",
+  en:"My family is happy and kind. We have a father, a mother and a child.\nEvery morning we eat and smile. At night we read a book for a while.\nA happy family is the best place to grow and learn.",
+  zh:"我的家庭幸福又善良。我们有父亲、母亲和孩子。\n每天早晨我们吃着饭微笑。晚上我们读会儿书。\n幸福的家庭是成长和学习最好的地方。"},
+ {id:"a28", lv:3, title:"The Little Rabbit", titleZh:"小兔子",
+  en:"A little rabbit lives in the garden. It likes to eat the carrot and the lettuce.\nWhen the weather is sunny, the rabbit jumps with joy.\nThe children watch the rabbit and laugh. They are very careful not to scare it.",
+  zh:"一只小兔子住在花园里。它喜欢吃胡萝卜和生菜。\n天气晴朗时，兔子高兴地跳。\n孩子们看着兔子笑。他们很小心，不吓它。"},
+ {id:"a29", lv:3, title:"The Yellow Butterfly", titleZh:"黄蝴蝶",
+  en:"A yellow butterfly flies over the flower. It moves from petal to petal in the summer.\nThe butterfly is silent and light. It does not make a sound.\nWe follow the butterfly with our eyes. It is a small wonder of nature.",
+  zh:"一只黄蝴蝶在花上飞。夏天里它从一瓣移到另一瓣。\n蝴蝶安静又轻。它不发出声音。\n我们用眼睛追蝴蝶。它是自然的小奇迹。"},
+ {id:"a30", lv:3, title:"A Summer Picnic", titleZh:"夏日野餐",
+  en:"We plan a summer picnic by the river. Mother packs the sandwich, the apple and the water.\nFather drives the car to the green hill. The children run and play.\nAfter the meal we lie on the grass. The sky is blue and the wind is soft.",
+  zh:"我们计划在河边夏日野餐。妈妈装好三明治、苹果和水。\n爸爸开车去绿山。孩子们跑着玩。\n吃完饭我们躺在草地上。天很蓝，风很柔。"},
+ {id:"a31", lv:3, title:"The Clever Monkey", titleZh:"聪明的猴子",
+  en:"A clever monkey lives in the forest. It can open the banana with its hand.\nWhen the tiger comes, the monkey climbs a tree. It is safe up there.\nThe monkey is smart and funny. Visitors always stop to watch it.",
+  zh:"一只聪明的猴子住在森林里。它能用手剥香蕉。\n老虎来了，猴子爬上树。上面很安全。\n猴子又聪明又滑稽。游客总停下来看它。"},
+ {id:"a32", lv:3, title:"The Broken Letter", titleZh:"破损的信",
+  en:"I found a broken letter in the box. The paper was old and the words were faint.\nMy grandfather read it with a smile. It was a note from his mother.\nThe letter tells a simple story of love. We keep it in a safe place now.",
+  zh:"我在盒子里发现一封破信。纸很旧，字模糊。\n爷爷笑着读了它。那是他母亲写的便条。\n信讲了一个简单的爱的故事。我们现在把它收好。"},
+ {id:"a33", lv:3, title:"The Turning Weather", titleZh:"变化的天气",
+  en:"The weather is turning from warm to cool. The leaves on the tree become yellow and red.\nA gentle wind blows the cloud away. The sun comes out for a moment.\nWe enjoy the change of the season. It reminds us that nature is always moving.",
+  zh:"天气正从暖转凉。树上的叶子变黄变红。\n微风把云吹走。太阳出来一会儿。\n我们享受季节的变化。它提醒我们自然总在流动。"},
+ {id:"a34", lv:3, title:"A Better Scanner", titleZh:"更好的扫描仪",
+  en:"The office bought a better scanner last week. It can read a paper in a second.\nThe worker puts the document on the glass. The machine makes a clear picture.\nA better tool saves our time. We finish the job before the evening.",
+  zh:"办公室上周买了一台更好的扫描仪。它一秒就能读一页纸。\n工人把文件放在玻璃上。机器生成清晰的图。\n更好的工具省时间。我们傍晚前做完工作。"},
+ {id:"a35", lv:3, title:"The Golden Garden", titleZh:"金色花园",
+  en:"My grandmother has a golden garden behind the house. She plants the rose, the tulip and the sun flower.\nEvery spring she waters the soil with care. The bees come to visit the bloom.\nThe golden garden is her quiet joy. We help her pull the weed on the weekend.",
+  zh:"奶奶屋后有个金色花园。她种玫瑰、郁金香和向日葵。\n每年春天她细心浇水。蜜蜂来访花。\n金色花园是她安静的快乐。周末我们帮她拔草。"},
+ {id:"a36", lv:3, title:"A Hidden Secret", titleZh:"藏着的秘密",
+  en:"The children found a hidden secret under the stair. It was a small box with a silver ring.\nThey opened it with a careful hand. Inside was a tiny note.\nThe secret made them smile. They decided to keep it as a sweet memory.",
+  zh:"孩子们在楼梯下发现一个藏着的秘密。那是个装银戒指的小盒子。\n他们小心地打开。里面有一张小纸条。\n秘密让他们微笑。他们决定把它当作甜蜜回忆。"},
+ {id:"a37", lv:3, title:"The Silent Lesson", titleZh:"安静的课",
+  en:"The teacher gave a silent lesson about the star. We listened with our eyes on the map.\nThe topic was the planet and the moon. It was easy and clear.\nA silent lesson can teach a lot. We left the room with new ideas.",
+  zh:"老师上了一节关于星星的安静的课。我们眼睛看着地图听。\n主题是行星和月亮。简单又清楚。\n安静的课能教很多。我们带着新想法离开。"},
+ {id:"a38", lv:3, title:"The Open Window", titleZh:"开着的窗",
+  en:"She left the open window by the bed. The wind came in with a cool smell.\nA bird sat on the sill and sang a song. The room felt fresh and free.\nThe open window is a small joy. It links the house to the world outside.",
+  zh:"她让床边的窗开着。风带着清凉的味道进来。\n一只鸟落在窗台唱歌。房间清爽自由。\n开着的窗是小快乐。它把房子和外面的世界连起来。"},
+ {id:"a39", lv:3, title:"The Winter Morning", titleZh:"冬日的早晨",
+  en:"A winter morning is cold and still. The ground wears a white coat of frost.\nWe breathe the sharp air and watch our breath. The sun rises slow and red.\nThe winter morning is quiet and clean. It is a good time to think.",
+  zh:"冬日的早晨又冷又静。地面披上白色霜衣。\n我们吸着刺骨空气看自己的呼吸。太阳慢红地升起。\n冬日的早晨安静又干净。是思考的好时候。"},
+ {id:"a40", lv:3, title:"The Friendly Spider", titleZh:"友好的蜘蛛",
+  en:"A friendly spider built a web in the corner. It waited for the tiny fly with great care.\nThe web shone in the light like a silver net. The spider was quiet and still.\nThe friendly spider is a small helper. It eats the bug that bothers us.",
+  zh:"一只友好的蜘蛛在角落织网。它小心等小苍蝇。\n网在光下像银网发亮。蜘蛛安静不动。\n友好的蜘蛛是小帮手。它吃烦人的虫子。"},
+ /* ===== L4 雅思 / 托福（较长、学术） ===== */
+ {id:"a41", lv:4, title:"Why We Read", titleZh:"我们为何阅读",
+  en:"Reading is a basic skill that opens the door to knowledge. When we read, we meet new ideas and different ways of life.\nA good reader can learn from books, from the news and from the screen. Reading also trains the mind to think in order.\nIn a busy world, reading gives us a quiet hour. It is one of the best habits a person can keep.",
+  zh:"阅读是打开知识之门的基本技能。阅读时，我们遇见新想法和不同生活方式。\n好的读者能从书、新闻和屏幕学习。阅读也训练思维有序思考。\n在忙碌世界，阅读给我们安静的一小时。它是人能保持的最好习惯之一。"},
+ {id:"a42", lv:4, title:"How Plants Grow", titleZh:"植物如何生长",
+  en:"Plants grow from a small seed in the soil. With water, light and warm air, the seed opens and sends a root down.\nA green stem rises and leaves spread to catch the sun. The plant makes its own food in the leaf.\nGrowth is slow but steady. In time the plant may bloom and drop new seeds for the next spring.",
+  zh:"植物从土里的小种子长起。有水、光和暖空气，种子裂开，根向下伸。\n绿茎升起，叶展开接阳光。植物在叶里造自己的食物。\n生长慢但稳。终会开花，落下新种子等下一个春天。"},
+ {id:"a43", lv:4, title:"The Water Cycle", titleZh:"水循环",
+  en:"The water cycle moves the same water around the earth. The sun heats the river and the sea, and the water rises as vapor.\nHigh in the cold sky the vapor becomes cloud. When the cloud is heavy, the rain falls back to the ground.\nThe rain feeds the stream and returns to the ocean. In this way water never disappears, it only changes form.",
+  zh:"水循环让同样的水在地球流动。太阳晒热河与海，水化汽上升。\n在高冷天空，汽变云。云重了，雨落回地面。\n雨补溪流回海洋。这样水从不消失，只变形态。"},
+ {id:"a44", lv:4, title:"Keeping Healthy", titleZh:"保持健康",
+  en:"To keep healthy, we need a simple plan each day. Eat more fruit and vegetables, drink water, and sleep for eight hours.\nExercise makes the heart strong and the mind clear. A short walk after a meal is a good start.\nHealth is not a single act but a habit. Small choices made often are what protect our body.",
+  zh:"保持健康需要每天简单计划。多吃果蔬、喝水、睡八小时。\n运动让心强、脑清。饭后散步是好开始。\n健康不是一次行动而是习惯。常做的小选择保护身体。"},
+ {id:"a45", lv:4, title:"A Trip to the Zoo", titleZh:"动物园之行",
+  en:"We took a trip to the zoo on a sunny day. The first stop was the monkey hill, where the apes played with joy.\nThen we watched the tall giraffe and the heavy elephant. The children drew a picture of each animal.\nA trip to the zoo teaches us about nature. It also shows why we must protect wild life.",
+  zh:"晴天我们去动物园。第一站是猴山，猿猴玩得开心。\n然后看高长颈鹿和重象。孩子们画每种动物。\n动物园之行教我们自然。也说明为何要保护野生动物。"},
+ {id:"a46", lv:4, title:"Saving the Ocean", titleZh:"拯救海洋",
+  en:"The ocean covers most of our planet, yet it is in danger. Plastic waste floats on the surface and hurts the fish below.\nWe can help by using less plastic and joining a beach clean up. Small acts by many people add up.\nSaving the ocean is saving ourselves. A clean sea means healthy food and a stable climate.",
+  zh:"海洋覆盖地球大部，却在危险中。塑料垃圾漂在水面，伤下面的鱼。\n我们可以少用的塑料、参加海滩清理来帮忙。众人的小行动加起来。\n救海洋就是救自己。干净的海意味着健康食物和稳定气候。"},
+ {id:"a47", lv:4, title:"The Story of Paper", titleZh:"纸的故事",
+  en:"Paper was first made in ancient China from the bark of a tree. The method slowly spread to the west over many centuries.\nToday paper is made in large mills from wood. We use it to write, to print and to pack.\nPaper seems common, but it changed human history. It let knowledge travel far and stay for a long time.",
+  zh:"纸最早在中国古代用树皮制成。方法经许多世纪慢慢传到西方。\n今天纸在大厂用木头造。我们用来写、印、包。\n纸看似普通，却改变了人类历史。它让知识远行并长久保存。"},
+ {id:"a48", lv:4, title:"Learning a Language", titleZh:"学习一门语言",
+  en:"Learning a language is more than words. It is a way to see how other people think and live.\nAt first the sound is strange and the rule is hard. With daily practice the ear gets used to it.\nA language opens a door to friends across the world. The effort you make today pays back for a life time.",
+  zh:"学语言不只是词。它是看别人如何想和活的方式。\n起初声音陌生、规则难。每天练，耳朵会习惯。\n语言打开通向世界朋友的门。今天的努力回报一生。"},
+ {id:"a49", lv:4, title:"The Solar System", titleZh:"太阳系",
+  en:"Our solar system has one star and eight planets. The earth is the third planet from the sun and the only one with life we know.\nThe big planets are made of gas, while the small ones are rock. They all move around the sun in a path.\nThe solar system is vast and quiet. To study it is to learn our own small place in the universe.",
+  zh:"太阳系有一颗恒星和八颗行星。地球是第三颗，也是已知唯一有生命的。\n大行星由气构成，小的由岩构成。它们都沿轨道绕太阳。\n太阳系广袤安静。研究它，是了解我们在宇宙中的小位置。"},
+ {id:"a50", lv:4, title:"Good Habits for School", titleZh:"上学的好习惯",
+  en:"Good habits make school easier and happier. Pack the bag the night before and sleep early so the morning is calm.\nListen in class, write the key point, and review a little each day. Do not leave work to the last minute.\nHabits are like seeds. Planted early, they grow into a steady and confident student.",
+  zh:"好习惯让上学更轻松快乐。前一晚收拾书包、早睡，早晨就从容。\n上课听、写要点、每天复习一点。别把事拖到最后。\n习惯像种子。早种下，长成稳重自信的学生。"}
 ];
 WORDS.forEach(x=>{ DICT[x.w]={p:x.pos,i:x.ip,z:x.zh}; });
 
@@ -4930,9 +5108,10 @@ function renderRules(){
   const tabs=`<div class="rules-tabs">
       <button class="${rulesTab==="vowel"?"on":""}" onclick="setRulesTab('vowel')"><span class="rt-l">🔤 元音发音总表</span><span class="rt-s">元音</span></button>
       <button class="${rulesTab==="consonant"?"on":""}" onclick="setRulesTab('consonant')"><span class="rt-l">🗣 辅音·特殊组合</span><span class="rt-s">辅音</span></button>
+      <button class="${rulesTab==="stress"?"on":""}" onclick="setRulesTab('stress')"><span class="rt-l">🔺 重音 / 次重音</span><span class="rt-s">重音</span></button>
+      <button class="${rulesTab==="reduce"?"on":""}" onclick="setRulesTab('reduce')"><span class="rt-l">🔉 弱读规则</span><span class="rt-s">弱读</span></button>
+      <button class="${rulesTab==="syldiv"?"on":""}" onclick="setRulesTab('syldiv')"><span class="rt-l">✂️ 切分法</span><span class="rt-s">切分法</span></button>
       <button class="${rulesTab==="steps"?"on":""}" onclick="setRulesTab('steps')"><span class="rt-l">📖 见词能读·三步法</span><span class="rt-s">三步法</span></button>
-      <button class="${rulesTab==="stress"?"on":""}" onclick="setRulesTab('stress')"><span class="rt-l">🔺 重音 / 次重音规则</span><span class="rt-s">重音</span></button>
-      <button class="${rulesTab==="reduce"?"on":""}" onclick="setRulesTab('reduce')"><span class="rt-l">🔉 弱读规则（schwa）</span><span class="rt-s">弱读</span></button>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
       <button class="btn btn-main" style="padding:6px 16px;font-size:13px" onclick="goRulesQuiz()">🧠 测一测这些规则 →</button>
@@ -4997,6 +5176,22 @@ function renderRules(){
           <div class="ri-ex">${d.note}</div>
         </div>`).join("")}
       <div class="st-note" style="margin-top:14px">🎯 练法：以后遇到生词（包括阅读页里的），先自己走一遍三步法读出来，再点喇叭对照正确读音——读对了就是「见词能读」。</div>`;
+  }else if(rulesTab==="syldiv"){
+    c.innerHTML=tabs+`
+      <div class="hint">💡 <b>切分法</b>：拿到长词，先按规则切成音节，再逐音节拼读。先掌握「切分规则」，再记「特殊规则」。</div>
+      <div class="grp-title">① 切分规则（通用）</div>
+      ${SYLDIV_RULES.map(r=>`<div class="rule-item">
+        <div class="ri-n">${r.n}</div>
+        <div class="ri-d">${r.d}</div>
+        <div class="ri-ex">例：${r.ex}</div>
+      </div>`).join("")}
+      <div class="grp-title">② 特殊规则（易错）</div>
+      ${SYLDIV_SPECIAL.map(r=>`<div class="rule-item">
+        <div class="ri-n">${r.n}</div>
+        <div class="ri-d">${r.d}</div>
+        <div class="ri-ex">例：${r.ex}</div>
+      </div>`).join("")}
+      <div class="st-note" style="margin-top:14px">🎯 练法：遇到长词先在心里切一刀，再逐块拼读。配合「三步法」使用效果最佳。</div>`;
   }else if(rulesTab==="stress"){
     const demos=["opportunity","university","information","individual","generation"];
     c.innerHTML=tabs+`
@@ -6206,11 +6401,6 @@ function renderRead(){
           ${showZh&&zhs[i]?`<div class="p-zh">${zhs[i]}</div>`:""}
         </div>`).join("")}
     </div>
-    <div class="glossary">
-      <h4>📒 本篇生词表（点击听读音，鼠标悬停看词性/音标/释义）</h4>
-      <div class="g-chips">${gloss.slice(0,24).map(w=>
-        `<span class="g-chip lw" data-w="${w}" onclick="say('${w}',0.85)">${w} 🔊</span>`).join("")}</div>
-    </div>
     <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       ${curArt>0?'<button class="btn btn-ghost" onclick="curArt--;renderRead()">← 上一篇</button>':''}
       ${curArt<ARTICLES.length-1?'<button class="btn btn-ghost" onclick="curArt++;renderRead()">下一篇 →</button>':''}
@@ -6247,7 +6437,7 @@ function readArticle(){
 /* 文章列表 */
 function openArtList(){
   document.getElementById("readCard").innerHTML=`
-    <div class="sec"><h3>📚 美国移民主题阅读（共 ${ARTICLES.length} 篇）</h3>
+    <div class="sec"><h3>📚 分级阅读（共 ${ARTICLES.length} 篇）</h3>
       <div class="art-list">${ARTICLES.map((a,i)=>`
         <button class="art-card" onclick="curArt=${i};renderRead()">
           <span class="a-lv">${LEVEL_NAME[a.lv]}</span>
@@ -6279,7 +6469,7 @@ function renderVocab(){
 }
 
 /* ================= 页面切换 ================= */
-let tab="learn";
+let tab="rules";
 document.querySelectorAll("nav button").forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
@@ -6288,13 +6478,12 @@ document.querySelectorAll("nav button").forEach(b=>{
   };
 });
 function render(){
-  ["learn","rules","read","quiz","vocab"].forEach(t=>
+  ["learn","rules","read","quiz"].forEach(t=>
     document.getElementById("tab-"+t).style.display = t===tab?"block":"none");
   if(tab==="learn") renderLearn();
   if(tab==="rules") renderRules();
   if(tab==="read") renderRead();
   if(tab==="quiz"){ quiz=null; renderQuiz(); }
-  if(tab==="vocab") renderVocab();
   updateHeader();
 }
 render();
