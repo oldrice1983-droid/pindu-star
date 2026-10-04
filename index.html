@@ -3,23 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* 镜像站（GitHub Pages 等）自动跳转到正式域名：云端 API 只允许官方 Origin 跨域，
-   在镜像站上登录/注册必然失败。跳转时把本机学习进度打包在 hash 里带到正式域名自动导入。 */
+/* 镜像站（GitHub Pages 等）→ 正式域名。
+   云端 API 只允许官方 Origin，在镜像站上登录/注册必然失败，所以镜像站要跳走。
+   跳转时把本机旧进度（pd_u_* 原始键）打包进 hash，官网落地后自动导入再上云。
+   离线时不自动跳（否则打不开页面），但会显示提示条，可手动点击前往。 */
 (function(){
+  var OFFICIAL="https://pindu-star.app.workbuddy.host/";
+  function pack(){
+    var d={},n=0,i,k;
+    try{ for(i=0;i<localStorage.length;i++){ k=localStorage.key(i);
+      if(k&&(k.indexOf("pd_u_")===0||k==="pd_sys_cur")){ d[k]=localStorage.getItem(k); n++; } } }catch(e){}
+    var t=OFFICIAL;
+    if(n>0){ try{ var b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+      if(b.length<1000000) t+="#import="+encodeURIComponent(b); }catch(e){} }
+    return t;
+  }
+  function go(){ try{ location.replace(pack()); }catch(e){ try{ location.href=OFFICIAL; }catch(_){} } }
   try{
     var h=location.hostname;
-    if(h==="pindu-star.app.workbuddy.host"||h==="localhost"||h==="127.0.0.1")return;
-    if(navigator.onLine===false)return;
-    if((location.search+location.hash).indexOf("noredir")>=0)return;
-    var d={},n=0,i,k;
-    try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);
-      if(k&&(k.indexOf("pd_u_")===0||k==="pd_sys_cur")){d[k]=localStorage.getItem(k);n++;}}}catch(e){}
-    var t="https://pindu-star.app.workbuddy.host/";
-    if(n>0){
-      try{var b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
-        if(b.length<1000000)t+="#import="+encodeURIComponent(b);}catch(e){}
+    if(h==="pindu-star.app.workbuddy.host"||h==="localhost"||h==="127.0.0.1") return;
+    if((location.search+location.hash).indexOf("noredir")>=0) return;
+    if(navigator.onLine===false){
+      /* 离线：留在本机继续学，但顶部给出「联网后前往官网」的入口 */
+      var tip=document.createElement("div");
+      tip.id="pdMirrorTip";
+      tip.style.cssText="position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:99999;"+
+        "background:#0a9f5b;color:#fff;font-size:13px;line-height:1.6;padding:10px 14px;border-radius:12px;"+
+        "box-shadow:0 6px 20px rgba(0,0,0,.3);display:flex;align-items:center;gap:10px";
+      tip.innerHTML='<span style="flex:1">当前是镜像站且已离线，学习数据无法保存到云端</span>';
+      var btn=document.createElement("button");
+      btn.type="button"; btn.textContent="重试";
+      btn.style.cssText="flex:none;border:0;background:#fff;color:#0a9f5b;font-weight:700;font-size:13px;padding:6px 12px;border-radius:8px";
+      btn.onclick=go;
+      tip.appendChild(btn);
+      (document.body||document.documentElement).appendChild(tip);
+      return;
     }
-    location.replace(t);
+    go();
   }catch(e){}
 })();
 </script>
@@ -369,6 +389,9 @@
   .opt.right{border-color:var(--green); background:#cdf3e2; color:#067a47; font-weight:700; box-shadow:0 0 0 1px var(--green) inset;}
   .opt.wrong{border-color:var(--red); background:#fbd6d3; color:#c0392b; font-weight:700; box-shadow:0 0 0 1px var(--red) inset;}
   .opt:disabled{cursor:default;}
+  /* 规则测试选项多为整句规则说明，字号/内边距比单词题略小，避免一行撑满 */
+  .opts.opts-rules{gap:10px;margin-top:18px;}
+  .opts.opts-rules .opt{font-size:15px; font-weight:500; line-height:1.65; padding:13px 16px; text-align:left;}
   /* ===== 本词测试 ===== */
   .wq-head{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:8px;flex-wrap:wrap;}
   .wq-title{font-weight:700;color:var(--green-d);font-size:16px;}
@@ -629,7 +652,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-180.png">
 <script>
-  window.__PD_BUILD = 'pindu-v10';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
+  window.__PD_BUILD = 'pindu-v11';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       /* 已有控制者时说明本次是新版本接管 → 自动刷新一次，避免长期跑旧缓存
@@ -8497,21 +8520,46 @@ const CONFUSABLES={
 /* 通用词库（兜底：保证任何词都能找到形近词） */
 const GENERIC=["map","cap","cup","cop","cab","can","cat","cut","cot","cod","car","card","care","cart","park","part","port","pork","cord","cold","gold","hold","fold","told","bold","bald","band","bond","bind","find","mind","kind","wind","sand","send","sing","song","ring","king","ping","long","born","corn","worn","torn","turn","burn","barn","yarn","far","star","scar","bar","bear","beer","fear","hear","here","near","clear","dear","year","boar","board","beard","bird","word","third","herd","hard","dark","mark","market","start","smart","heart","heat","head","heal","heap","help","hell","hill","hull","hall","hole","home","hope","hose","horse","house","mouse","mouth","month","north","south","worth","earth","birth","both","boss","loss","moss","most","must","mist","rest","best","test","west","nest","fast","last","list","fist","first","art","act","ant","end","enter","light","night","right","eight","sight","fight","flight","might","write","white","bite","kite","site","time","tide","tone","tune","tube","cube","cure","red","read","rid","sit","sat","set","fit","fat","bit","bat","hit","hat","hot","hut","pin","pen","pan","pet","pit","pat","pot","top","tip","tap","ten","tin","ton","tan","win","wing","wall","walk","well","will","wash","wish","fish","dish","push","bus","big","bag","bed","bad","look","cook","hook","took","boot","book","dog","log","dot","dig","sun","son","run","fun","green","queen","seen","food","good","foot","tree","free","three","ship","sheep","shop","chat","cake","lake","make","take","bike","like","hike"];
 /* 选 n 个干扰项：score 越高越「像」正确答案 → 越难 */
+/* 干扰项候选：按首字母分桶。只对同首字母的一小撮候选算编辑距离——
+   原来是对全部 2800 词（STUDIED）逐个算 lev，一次 pickDistractors 就是 2800 次，
+   自动题库一次调用上万次 ≈ 千万级运算，页面直接卡死。 */
+let _candIdx=null;
+function candIndex(){
+  if(_candIdx&&_candIdx.size&&_candIdx.get("__n__")===WORDS.length) return _candIdx;
+  const m=new Map();
+  for(const w of WORDS){
+    const word=String((w&&w.w)||"").toLowerCase();
+    if(!word) continue;
+    const k=word.charAt(0);
+    let a=m.get(k); if(!a){a=[];m.set(k,a);}
+    a.push(word);
+  }
+  m.set("__n__",WORDS.length);   /* 记录建索引时的词库规模，词库变了自动重建 */
+  _candIdx=m; return m;
+}
+const _distCache=new Map();
 function pickDistractors(correct,n,mode){
   correct=String(correct).toLowerCase();
+  const ck=correct+"|"+n+"|"+mode;
+  const hit=_distCache.get(ck);
+  if(hit) return shuffle(hit.slice());
   const cand=new Set();
-  (CONFUSABLES[correct]||[]).forEach(w=>cand.add(w));
-  STUDIED.filter(w=>w!==correct).map(w=>({w,d:lev(correct,w)})).sort((a,b)=>a.d-b.d).slice(0,14).forEach(x=>cand.add(x.w));
-  GENERIC.filter(w=>w!==correct&&!cand.has(w)).map(w=>({w,d:lev(correct,w)})).sort((a,b)=>a.d-b.d).slice(0,14).forEach(x=>cand.add(x.w));
-  const arr=[...cand].filter(w=>w!==correct).map(w=>{
+  (CONFUSABLES[correct]||[]).forEach(w=>cand.add(String(w).toLowerCase()));
+  /* 同首字母的词最像"易混词"，取一小撮即可；再补少量通用词 */
+  const bucket=(candIndex().get(correct.charAt(0))||[]).filter(w=>w!==correct);
+  shuffle(bucket).slice(0,40).forEach(w=>cand.add(w));
+  shuffle(GENERIC).slice(0,40).forEach(w=>{ if(w!==correct) cand.add(w); });
+  const arr=[...cand].filter(w=>w!==correct&&w&&typeof w==="string").map(w=>{
     const d=lev(correct,w); let s=1/(1+d);
     if(w.length===correct.length) s+=0.2;
     if(w[0]===correct[0]) s+=0.3;
     if(mode==="sound"&&w.slice(0,2)===correct.slice(0,2)) s+=0.3;
-    if((CONFUSABLES[correct]||[]).includes(w)) s+=0.6;
+    if((CONFUSABLES[correct]||[]).map(String).map(x=>x.toLowerCase()).includes(w)) s+=0.6;
     return {w,s};
   }).sort((a,b)=>b.s-a.s);
-  return shuffle(arr.slice(0,n).map(x=>x.w));
+  const top=arr.slice(0,n).map(x=>x.w);
+  _distCache.set(ck,top);
+  return shuffle(top.slice());
 }
 
 /* 为一个单词生成测试题：释义 / 听音辨词 / 例句填空 / 音节切分 / 延展（词根·元音发音·词组） */
@@ -8989,12 +9037,35 @@ function autoWords(){
                     &&(settings.exam==="all"||(w.exam||[]).includes(settings.exam))).map(w=>w.w);
   return [...new Set(pool)];
 }
-/* 自动出题：词池 × 12 类生成器，去重 → 错题优先 → 题型轮换 → 随机抽 n 题 */
+/* 词 → 词条 的索引（Map，O(1)）。词库已 2800 词，循环里用 WORDS.find 是 O(N²)，
+   再乘 12 类生成器，「自动题库」会直接把页面卡死。 */
+let _wordIdx=null;
+function wordIndex(){
+  if(!_wordIdx||_wordIdx.size!==WORDS.length){
+    _wordIdx=new Map();
+    for(const w of WORDS) if(w&&w.w) _wordIdx.set(w.w,w);
+  }
+  return _wordIdx;
+}
+/* 单轮最多按多少个词出题：够用即可，避免题池爆炸拖死浏览器 */
+const AUTO_POOL_LIMIT=160;
+
+/* 自动出题：词池 × 12 类生成器，去重 → 错题优先 → 题型轮换 → 随机抽 n 题
+   词池按「已学 + 错题优先 + 其余随机」截断到 AUTO_POOL_LIMIT 个词，保证毫秒级返回。 */
 function buildAutoQuiz(n){
-  const pool=autoWords();
+  const idx=wordIndex();
+  let pool=autoWords();
+  const learned=learnedWords();
+  if(pool.length>AUTO_POOL_LIMIT){
+    const learnedFirst=pool.filter(w=>learned.has(w));
+    const rest=pool.filter(w=>!learned.has(w));
+    const wrong=rest.filter(w=>Object.keys(autoProg).some(k=>k.endsWith(":"+w)&&autoProg[k].bad>0));
+    const others=shuffle(rest.filter(w=>wrong.indexOf(w)<0));
+    pool=learnedFirst.concat(wrong,others).slice(0,AUTO_POOL_LIMIT);
+  }
   const byType={}, seen=new Set();
   pool.forEach(w=>{
-    const wd=WORDS.find(x=>x.w===w); if(!wd) return;
+    const wd=idx.get(w); if(!wd) return;
     AUTO_GENS.forEach(g=>{
       let q=null; try{ q=g(wd); }catch(e){ return; }
       if(!q||!q.opts||q.opts.length<3||q.opts.indexOf(q.ans)<0) return;
@@ -9011,7 +9082,8 @@ function buildAutoQuiz(n){
   });
   const types=shuffle(Object.keys(byType)), picked=[];
   Object.values(byType).forEach(arr=>arr.sort((a,b)=>b._sc-a._sc));
-  while(picked.length<n && types.length){
+  let guard=0;
+  while(picked.length<n && types.length && guard++<50){
     let added=false;
     for(const t of types){
       const arr=byType[t]; if(!arr||!arr.length) continue;
@@ -9022,15 +9094,19 @@ function buildAutoQuiz(n){
   }
   return shuffle(picked).slice(0,n);
 }
-/* 题池规模（用于顶部提示，带缓存：切换范围时重算） */
+/* 题池规模（顶部提示）：按抽样估算，避免全量跑 12 类生成器把界面卡住 */
 let _autoPoolCache=null;
 function autoPoolSize(){
   if(_autoPoolCache!=null) return _autoPoolCache;
-  const pool=autoWords(); let n=0;
-  pool.forEach(w=>{ const wd=WORDS.find(x=>x.w===w); if(!wd) return;
-    AUTO_GENS.forEach(g=>{ try{ if(g(wd)) n++; }catch(e){} }); });
-  _autoPoolCache=n;
-  return n;
+  const idx=wordIndex(), all=autoWords(), total=all.length;
+  const sample=all.slice(0,AUTO_POOL_LIMIT);
+  let n=0;
+  for(const w of sample){
+    const wd=idx.get(w); if(!wd) continue;
+    for(const g of AUTO_GENS){ try{ const q=g(wd); if(q&&q.opts&&q.opts.length>=3&&q.opts.indexOf(q.ans)>=0) n++; }catch(e){} }
+  }
+  _autoPoolCache = total>sample.length ? Math.round(n*total/sample.length) : n;  /* 按抽样比例估算量级 */
+  return _autoPoolCache;
 }
 
 function startQuiz(){
@@ -9208,7 +9284,7 @@ function renderQuiz(){
     </div>
     ${segHTML}
     <div class="quiz-q">${qBody}</div>
-    <div class="opts">${q.opts.map((o,i)=>
+    <div class="opts${isRules?" opts-rules":""}">${q.opts.map((o,i)=>
       `<button class="opt" id="opt-${i}" onclick="pick(${i})">${escHTML(o)}</button>`).join("")}</div>
     <div class="quiz-foot" id="quizFoot"></div>`;
 }

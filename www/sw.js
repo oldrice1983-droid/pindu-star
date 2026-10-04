@@ -1,8 +1,13 @@
 /* 拼读星球 Service Worker
    离线优先的教学型 PWA：页面网络优先（保证总是拿到最新版），
    静态资源「缓存优先 + 后台更新」，断网时也能继续学习。
-   更新策略：修改上面 CACHE 版本号即可让旧缓存失效。            */
-const CACHE = "pindu-v10";  // v10：云 SDK 多 CDN 兜底(jsdelivr→unpkg)+登录框先显示再连账号系统，避免 CDN 抖动直接退本机模式
+   更新策略：修改上面 CACHE 版本号即可让旧缓存失效。
+
+   ⚠️ 镜像站（GitHub Pages 等）承载不了云端账号：云 API 严格匹配官方 Origin，
+   在镜像站上登录必然失败。所以 SW 在网络层直接把镜像站导航重定向到官网，
+   即使用户装的是镜像站 PWA、页面还缓存着旧版本，也能立刻脱困拿到最新版。 */
+const CACHE = "pindu-v12";  // v12：SW 网络层重定向镜像站→官网（旧缓存 PWA 也能自动脱困）；含 v11 的自动题库性能与界面修复
+const OFFICIAL = "https://pindu-star.app.workbuddy.host/";
 const CORE = ["./", "index.html", "account.js", "cloud-layer.js", "manifest.webmanifest", "icons/icon-180.png"];
 
 self.addEventListener("install", function (e) {
@@ -26,7 +31,9 @@ self.addEventListener("fetch", function (e) {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  /* 页面导航：网络优先，断网时回落到缓存的 index.html */
+  /* 页面导航：网络优先，断网时回落到缓存的 index.html
+     注意：镜像站→官网的重定向放在 index.html 内联脚本里做（能读本机 localStorage
+     并把旧进度打包带走）；SW 网络层重定向会丢掉这层数据搬运，故不在此处理。 */
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req).then(function (r) {

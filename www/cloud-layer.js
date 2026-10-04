@@ -20,7 +20,7 @@
         var json = decodeURIComponent(escape(window.atob(decodeURIComponent(mImp[1]))));
         var data = JSON.parse(json);
         Object.keys(data).forEach(function (k) {
-          if (k.indexOf("pd_u_") !== 0 && k !== "pd_sys_cur") return;
+          if (k.indexOf("pd_u_") !== 0 && k.indexOf("pd_g_") !== 0 && k !== "pd_sys_cur") return;
           if (data[k] == null) return;
           try { if (raw.getItem(k) === null) raw.setItem(k, data[k]); } catch (e) {}
         });
@@ -109,9 +109,15 @@
     try { acct = raw.getItem('pd_sys_cur'); } catch (e) {}
     if (!acct) acct = 'fm520571';
     var changed = false;
+    /* 先读旧本地账号的原始键；没有再退到游客键（pd_g_，即"不注册"期间学的进度） */
+    function readKey(k) {
+      var v = null;
+      try { v = raw.getItem('pd_u_' + acct + '_' + k); } catch (e) {}
+      if (!v) { try { v = raw.getItem('pd_g_' + k); } catch (e) {} }
+      return v;
+    }
     Object.keys(MERGE_KEYS).forEach(function (k) {
-      var val = null;
-      try { val = raw.getItem('pd_u_' + acct + '_' + MERGE_KEYS[k]); } catch (e) {}
+      var val = readKey(MERGE_KEYS[k]);
       if (!val) return;
       try {
         var v = JSON.parse(val);

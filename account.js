@@ -79,7 +79,7 @@
         '<div id="pdErr" class="pd-err"></div>' +
         '<div class="pd-hint" id="pdHint"></div>' +
         '<button id="pdForgot" type="button" class="pd-linkbtn">忘记密码？</button>' +
-        '<button id="pdGuest" type="button" class="pd-linkbtn">暂不登录，先试用（本机保存）</button>' +
+        '<button id="pdGuest" type="button" class="pd-linkbtn">不注册（无法保存学习数据，仅本机试用）</button>' +
         '<div style="text-align:center;font-size:11px;color:#c2cec7;margin-top:12px">' +
           (window.__PD_BUILD ? esc(window.__PD_BUILD) : '') + '</div>' +
       '</div>';
@@ -120,6 +120,24 @@
     e.className = ok ? "pd-err ok" : "pd-err";
   }
   function validEmail(e) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); }
+
+  /* 从会话对象里稳妥地取邮箱：SDK 不同版本字段位置不一致（user.email / email /
+     user_metadata.email / phone…）。取不到就返回 null —— 绝不能把 undefined 当账号名显示。 */
+  function sessionEmail(s) {
+    var d = s && s.data;
+    if (!d) return null;
+    var cands = [
+      d.email, d.user && d.user.email, d.user && d.user.user_email,
+      d.user_metadata && d.user_metadata.email,
+      d.user && d.user.user_metadata && d.user.user_metadata.email,
+      d.session && d.session.user && d.session.user.email,
+      d.user && d.user.phone
+    ];
+    for (var i = 0; i < cands.length; i++) {
+      if (typeof cands[i] === "string" && validEmail(cands[i])) return cands[i];
+    }
+    return null;
+  }
 
   function sendCode() {
     var email = ($("pdEmail").value || "").trim();
@@ -192,6 +210,7 @@
   }
 
   function loginOK(email) {
+    if (!validEmail(email)) { errMsg("登录信息异常，请重新登录"); return; }
     var m = $("pdMask"); if (m) m.parentNode.removeChild(m);
     showBar(email);
     if (window.__pdOnLogin) window.__pdOnLogin(email);
@@ -272,10 +291,12 @@
         return;
       }
       c.auth.getSession().then(function (s) {
-        if (s && !s.error && s.data && s.data.user) {
+        /* 只有确实拿到合法邮箱才算已登录；否则一律当未登录（避免出现 undefined 账号） */
+        var mail = (s && !s.error) ? sessionEmail(s) : null;
+        if (mail) {
           var m = $("pdMask"); if (m) m.parentNode.removeChild(m);
-          showBar(s.data.user.email);
-          if (window.__pdOnLogin) window.__pdOnLogin(s.data.user.email);
+          showBar(mail);
+          if (window.__pdOnLogin) window.__pdOnLogin(mail);
         } else {
           setMode("login");
         }
