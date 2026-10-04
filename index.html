@@ -629,9 +629,21 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-180.png">
 <script>
+  window.__PD_BUILD = 'pindu-v9';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function () { /* 局域网非安全上下文时静默忽略 */ });
+      /* 已有控制者时说明本次是新版本接管 → 自动刷新一次，避免长期跑旧缓存
+         （iOS 主屏 PWA 尤其容易卡在旧 JS 上，例如登录/注册界面改动看不到） */
+      var hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!hadController) return;                 /* 首次安装不刷新 */
+        if (sessionStorage.getItem('pd_reloaded') === navigator.serviceWorker.controller.scriptURL) return;
+        try { sessionStorage.setItem('pd_reloaded', navigator.serviceWorker.controller.scriptURL); } catch (e) {}
+        location.reload();
+      });
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        if (reg.update) reg.update();               /* 主动查更新 */
+      }).catch(function () { /* 局域网非安全上下文时静默忽略 */ });
     });
   }
 </script>

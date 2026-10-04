@@ -80,6 +80,8 @@
         '<div class="pd-hint" id="pdHint"></div>' +
         '<button id="pdForgot" type="button" class="pd-linkbtn">忘记密码？</button>' +
         '<button id="pdGuest" type="button" class="pd-linkbtn">暂不登录，先试用（本机保存）</button>' +
+        '<div style="text-align:center;font-size:11px;color:#c2cec7;margin-top:12px">' +
+          (window.__PD_BUILD ? esc(window.__PD_BUILD) : '') + '</div>' +
       '</div>';
     document.body.appendChild(o);
     $("pdTabLogin").onclick = function () { setMode("login"); };
