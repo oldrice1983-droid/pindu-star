@@ -2,6 +2,27 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<script>
+/* 镜像站（GitHub Pages 等）自动跳转到正式域名：云端 API 只允许官方 Origin 跨域，
+   在镜像站上登录/注册必然失败。跳转时把本机学习进度打包在 hash 里带到正式域名自动导入。 */
+(function(){
+  try{
+    var h=location.hostname;
+    if(h==="pindu-star.app.workbuddy.host"||h==="localhost"||h==="127.0.0.1")return;
+    if(navigator.onLine===false)return;
+    if((location.search+location.hash).indexOf("noredir")>=0)return;
+    var d={},n=0,i,k;
+    try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);
+      if(k&&(k.indexOf("pd_u_")===0||k==="pd_sys_cur")){d[k]=localStorage.getItem(k);n++;}}}catch(e){}
+    var t="https://pindu-star.app.workbuddy.host/";
+    if(n>0){
+      try{var b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+        if(b.length<1000000)t+="#import="+encodeURIComponent(b);}catch(e){}
+    }
+    location.replace(t);
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>拼读星球 · 英语自然拼读学习</title>
 <style>
