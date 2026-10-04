@@ -256,21 +256,32 @@
   /* ---------- 启动 ---------- */
   function boot() {
     injectCSS();
-    var c = ensureCloud();
-    if (!c) {
-      // SDK 未就绪（离线 / CDN 未加载）：仍可用本机模式学习，提示联网登录
-      buildMask();
-      errMsg("账号系统需联网加载，当前以本机模式运行（数据暂存本机）");
-      return;
-    }
-    c.auth.getSession().then(function (s) {
-      if (s && !s.error && s.data && s.data.user) {
-        showBar(s.data.user.email);
-        if (window.__pdOnLogin) window.__pdOnLogin(s.data.user.email);
-      } else {
-        buildMask(); setMode("login");
+    buildMask(); setMode("login");
+    errMsg("正在加载账号系统…");
+
+    var t0 = Date.now(), waited = false;
+    function ready() {
+      var c = ensureCloud();
+      if (!c) {
+        if (!waited && window.__pdSDKReady && Date.now() - t0 < 15000) {
+          waited = true;
+          window.__pdSDKReady.then(function () { setTimeout(ready, 0); });
+          return;
+        }
+        errMsg("账号系统需联网加载（当前以本机模式运行，数据暂存本机）。请检查网络后刷新重试。");
+        return;
       }
-    }).catch(function () { buildMask(); setMode("login"); });
+      c.auth.getSession().then(function (s) {
+        if (s && !s.error && s.data && s.data.user) {
+          var m = $("pdMask"); if (m) m.parentNode.removeChild(m);
+          showBar(s.data.user.email);
+          if (window.__pdOnLogin) window.__pdOnLogin(s.data.user.email);
+        } else {
+          setMode("login");
+        }
+      }).catch(function () { setMode("login"); });
+    }
+    ready();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
