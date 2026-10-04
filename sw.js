@@ -2,8 +2,8 @@
    离线优先的教学型 PWA：页面网络优先（保证总是拿到最新版），
    静态资源「缓存优先 + 后台更新」，断网时也能继续学习。
    更新策略：修改上面 CACHE 版本号即可让旧缓存失效。            */
-const CACHE = "pindu-v3";   // v3：词库扩至 2800 词 + 补齐全部真人单词音（美/英各 3866），重置缓存拉取新音频
-const CORE = ["./", "index.html", "account.js", "manifest.webmanifest", "icons/icon-180.png"];
+const CACHE = "pindu-v4";   // v4：学习进度上云（云端账号同步层 cloud-layer.js + 邮箱登录 account.js），重置缓存拉取新版
+const CORE = ["./", "index.html", "account.js", "cloud-layer.js", "manifest.webmanifest", "icons/icon-180.png"];
 
 self.addEventListener("install", function (e) {
   self.skipWaiting();
