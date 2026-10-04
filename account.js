@@ -5,7 +5,6 @@
 (function () {
   'use strict';
 
-  var LS = window.localStorage;
   function ensureCloud() {
     if (window.__initCloud && window.__initCloud()) return window.__cloud;
     return null;
@@ -25,10 +24,16 @@
     ".pd-row label{display:block;font-size:12px;color:#5a6b62;margin-bottom:4px}" +
     ".pd-input{width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #d8e3dd;border-radius:10px;font-size:15px;outline:none}" +
     ".pd-input:focus{border-color:#2f9e6e}" +
+    ".pd-otpwrap{display:flex;gap:8px;align-items:stretch}" +
+    ".pd-otpwrap .pd-input{flex:1;min-width:0}" +
+    ".pd-codebtn{flex:none;width:114px;border:1.5px solid #2f9e6e;background:#eaf6f0;color:#1f6e4d;" +
+    "font-size:13.5px;font-weight:700;border-radius:10px;cursor:pointer;padding:0 6px;white-space:nowrap}" +
+    ".pd-codebtn:disabled{opacity:.6;cursor:default}" +
     ".pd-go{width:100%;border:0;background:#2f9e6e;color:#fff;font-size:15px;font-weight:700;padding:12px 0;border-radius:11px;cursor:pointer;margin-top:4px}" +
     ".pd-go:active{background:#26835c}" +
     ".pd-err{color:#c0392b;font-size:12.5px;min-height:18px;margin:8px 2px 0;text-align:center}" +
-    ".pd-hint{font-size:11.5px;color:#9aa8a0;text-align:center;margin-top:10px;line-height:1.6}" +
+    ".pd-err.ok{color:#1f8a5a}" +
+    ".pd-hint{font-size:11.5px;color:#9aa8a0;text-align:center;margin-top:10px;line-height:1.7}" +
     ".pd-linkbtn{display:block;width:100%;background:transparent;border:0;color:#2f6e52;font-size:13px;cursor:pointer;margin-top:8px;text-decoration:underline}" +
     ".pd-bar{position:relative;z-index:9000;display:inline-flex;align-items:center;font-family:'Segoe UI',Arial,'PingFang SC',sans-serif}" +
     ".pd-bar.pd-bar-float{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px}" +
@@ -43,6 +48,10 @@
 
   var mode = "login";
   var pendingOtp = null; // {email, verificationId, isExistingUser}
+  var cdTimer = null;
+
+  var HINT_LOGIN = '输入邮箱和密码即可登录；密码忘了点下方「忘记密码」用邮箱重置。';
+  var HINT_REG = '填写邮箱 + 密码，点「获取验证码」，再把邮件里的 6 位数字填进验证码框。';
 
   /* ---------- 登录 / 注册浮层 ---------- */
   function buildMask() {
@@ -56,13 +65,19 @@
           '<button id="pdTabLogin" class="on" type="button">登录</button>' +
           '<button id="pdTabReg" type="button">注册</button>' +
         '</div>' +
-        '<div class="pd-row"><label>邮箱</label><input id="pdEmail" class="pd-input" type="email" placeholder="you@example.com" autocomplete="email"></div>' +
-        '<div class="pd-row"><label>密码</label><input id="pdPw" class="pd-input" type="password" placeholder="至少 6 位" autocomplete="current-password"></div>' +
-        '<div class="pd-row" id="pdOtpRow" style="display:none"><label>邮箱验证码</label><input id="pdOtp" class="pd-input" inputmode="numeric" placeholder="邮箱收到的 6 位验证码"></div>' +
+        '<div class="pd-row"><label>邮箱</label><input id="pdEmail" class="pd-input" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email"></div>' +
+        '<div class="pd-row"><label>密码 <span id="pdPwTip" style="color:#9aa8a0"></span></label>' +
+          '<input id="pdPw" class="pd-input" type="password" placeholder="至少 6 位" autocomplete="current-password"></div>' +
+        '<div class="pd-row" id="pdOtpRow">' +
+          '<label>邮箱验证码</label>' +
+          '<div class="pd-otpwrap">' +
+            '<input id="pdOtp" class="pd-input" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位验证码">' +
+            '<button id="pdOtpBtn" class="pd-codebtn" type="button">获取验证码</button>' +
+          '</div>' +
+        '</div>' +
         '<button id="pdGo" class="pd-go" type="button">登录</button>' +
         '<div id="pdErr" class="pd-err"></div>' +
-        '<div class="pd-hint">可用<b>邮箱 + 密码</b>直接登录；或点「获取邮箱验证码」用验证码登录 / 注册。<br>忘记密码可点「忘记密码」通过邮箱重置。</div>' +
-        '<button id="pdOtpBtn" type="button" class="pd-linkbtn">📩 获取邮箱验证码</button>' +
+        '<div class="pd-hint" id="pdHint"></div>' +
         '<button id="pdForgot" type="button" class="pd-linkbtn">忘记密码？</button>' +
         '<button id="pdGuest" type="button" class="pd-linkbtn">暂不登录，先试用（本机保存）</button>' +
       '</div>';
@@ -76,6 +91,7 @@
     $("pdPw").addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
     $("pdOtp").addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
     $("pdEmail").addEventListener("keydown", function (e) { if (e.key === "Enter") $("pdPw").focus(); });
+    setMode(mode);
     return o;
   }
 
@@ -84,44 +100,68 @@
     $("pdTabLogin").className = m === "login" ? "on" : "";
     $("pdTabReg").className = m === "reg" ? "on" : "";
     $("pdGo").textContent = m === "login" ? "登录" : "注册并登录";
-    $("pdOtpRow").style.display = "none";
+    /* 验证码只在「注册」时需要：登录页只填邮箱 + 密码 */
+    $("pdOtpRow").style.display = m === "reg" ? "block" : "none";
+    $("pdPwTip").textContent = m === "login" ? "" : "（至少 6 位）";
+    $("pdHint").innerHTML = m === "login" ? HINT_LOGIN : HINT_REG;
+    if ($("pdOtp")) $("pdOtp").value = "";
     pendingOtp = null;
-    $("pdErr").textContent = "";
+    if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+    var b = $("pdOtpBtn"); if (b) { b.disabled = false; b.textContent = "获取验证码"; }
+    errMsg("");
   }
 
-  function errMsg(s) { var e = $("pdErr"); if (e) e.textContent = s; }
+  function errMsg(s, ok) {
+    var e = $("pdErr");
+    if (!e) return;
+    e.textContent = s;
+    e.className = ok ? "pd-err ok" : "pd-err";
+  }
+  function validEmail(e) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); }
 
   function sendCode() {
     var email = ($("pdEmail").value || "").trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errMsg("请输入有效邮箱"); return; }
+    if (!validEmail(email)) { errMsg("请输入有效邮箱"); return; }
     var c = ensureCloud(); if (!c) { errMsg("账号系统未就绪，请检查网络后刷新"); return; }
     var btn = $("pdOtpBtn"); btn.textContent = "发送中…"; btn.disabled = true;
+    errMsg("");
     c.auth.sendOtp({ email: email }).then(function (r) {
-      btn.textContent = "📩 重新获取验证码"; btn.disabled = false;
-      if (r.error) { errMsg(r.error.message || "验证码发送失败"); return; }
+      if (r.error) {
+        btn.textContent = "获取验证码"; btn.disabled = false;
+        errMsg(r.error.message || "验证码发送失败"); return;
+      }
       pendingOtp = { email: email, verificationId: r.data.verificationId, isExistingUser: r.data.isExistingUser };
-      $("pdOtpRow").style.display = "block";
-      errMsg("验证码已发送到 " + email + (r.data.isExistingUser ? "（登录）" : "（注册）"));
-    }).catch(function (e) { btn.textContent = "📩 获取邮箱验证码"; btn.disabled = false; errMsg("发送失败：" + (e && e.message ? e.message : "请重试")); });
+      errMsg("✅ 验证码已发送到 " + email + "（" + (r.data.isExistingUser ? "登录" : "注册") + "），请把 6 位数字填进上面的「邮箱验证码」框", true);
+      var n = 60;
+      btn.textContent = n + "s 后重发";
+      cdTimer = setInterval(function () {
+        n--;
+        if (n <= 0) { clearInterval(cdTimer); cdTimer = null; btn.textContent = "重新获取"; btn.disabled = false; }
+        else btn.textContent = n + "s 后重发";
+      }, 1000);
+    }).catch(function (e) {
+      btn.textContent = "获取验证码"; btn.disabled = false;
+      errMsg("发送失败：" + (e && e.message ? e.message : "请重试"));
+    });
   }
 
   function submit() {
     var email = ($("pdEmail").value || "").trim();
     var pw = $("pdPw").value || "";
     var code = ($("pdOtp").value || "").trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errMsg("请输入有效邮箱"); return; }
+    if (!validEmail(email)) { errMsg("请输入有效邮箱"); return; }
     var c = ensureCloud(); if (!c) { errMsg("账号系统未就绪，请检查网络后刷新"); return; }
+
     if (mode === "reg") {
-      if (pw.length < 6) { errMsg("密码至少 6 位"); return; }
-      if (!pendingOtp || pendingOtp.email !== email) { errMsg("请先获取邮箱验证码"); return; }
-      if (!/^\d{4,8}$/.test(code)) { errMsg("请输入邮箱验证码"); return; }
+      /* 注册：邮箱 + 密码 + 邮箱验证码 */
+      if (pw.length < 6) { errMsg("请设置密码（至少 6 位）"); return; }
+      if (!/^\d{4,8}$/.test(code)) { errMsg("请填写邮件里的 6 位数字验证码"); return; }
+      if (!pendingOtp || pendingOtp.email !== email) { errMsg("请先点「获取验证码」"); return; }
       doRegister(c, email, pw, code);
     } else {
-      if (pendingOtp && pendingOtp.email === email && code) doOtpLogin(c, email, code);
-      else {
-        if (pw.length < 6) { errMsg("密码至少 6 位，或用验证码登录"); return; }
-        doPasswordLogin(c, email, pw);
-      }
+      /* 登录：只需邮箱 + 密码 */
+      if (pw.length < 6) { errMsg("请输入密码（至少 6 位）"); return; }
+      doPasswordLogin(c, email, pw);
     }
   }
 
@@ -130,13 +170,6 @@
       if (r.error) { errMsg(r.error.message || "登录失败"); return; }
       loginOK(email);
     }).catch(function (e) { errMsg("登录失败：" + (e && e.message ? e.message : "请重试")); });
-  }
-
-  function doOtpLogin(c, email, code) {
-    c.auth.verifyOtp({ email: email, verificationId: pendingOtp.verificationId, isExistingUser: pendingOtp.isExistingUser, token: code }).then(function (r) {
-      if (r.error) { errMsg(r.error.message || "验证失败"); return; }
-      loginOK(email);
-    }).catch(function (e) { errMsg("验证失败：" + (e && e.message ? e.message : "请重试")); });
   }
 
   function doRegister(c, email, pw, code) {
@@ -148,11 +181,11 @@
 
   function forgot() {
     var email = ($("pdEmail").value || "").trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errMsg("请输入有效邮箱"); return; }
+    if (!validEmail(email)) { errMsg("请先填写要找回的邮箱"); return; }
     var c = ensureCloud(); if (!c) { errMsg("账号系统未就绪，请检查网络后刷新"); return; }
     c.auth.resetPasswordForEmail(email).then(function (r) {
       if (r.error) { errMsg(r.error.message || "重置邮件发送失败"); return; }
-      errMsg("重置邮件已发送到 " + email + "，请查收");
+      errMsg("重置邮件已发送到 " + email + "，请按邮件提示设置新密码", true);
     }).catch(function (e) { errMsg("发送失败：" + (e && e.message ? e.message : "请重试")); });
   }
 

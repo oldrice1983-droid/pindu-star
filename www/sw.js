@@ -2,7 +2,7 @@
    离线优先的教学型 PWA：页面网络优先（保证总是拿到最新版），
    静态资源「缓存优先 + 后台更新」，断网时也能继续学习。
    更新策略：修改上面 CACHE 版本号即可让旧缓存失效。            */
-const CACHE = "pindu-v5";   // v5：镜像站自动跳转正式域名（云端 API 仅允许官方 Origin），跳转时打包携带本地进度
+const CACHE = "pindu-v8";   // v8：登录页只需邮箱+密码（不显示验证码框），注册页才显示验证码框；成功提示绿色
 const CORE = ["./", "index.html", "account.js", "cloud-layer.js", "manifest.webmanifest", "icons/icon-180.png"];
 
 self.addEventListener("install", function (e) {
