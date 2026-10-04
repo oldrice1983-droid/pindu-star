@@ -12,7 +12,8 @@
   function pack(){
     var d={},n=0,i,k;
     try{ for(i=0;i<localStorage.length;i++){ k=localStorage.key(i);
-      if(k&&(k.indexOf("pd_u_")===0||k==="pd_sys_cur")){ d[k]=localStorage.getItem(k); n++; } } }catch(e){}
+      /* pd_u_ 旧账号数据 + pd_g_ 游客（未注册）数据都要带走，否则跳转后会丢学习进度 */
+      if(k&&(k.indexOf("pd_u_")===0||k.indexOf("pd_g_")===0||k==="pd_sys_cur")){ d[k]=localStorage.getItem(k); n++; } } }catch(e){}
     var t=OFFICIAL;
     if(n>0){ try{ var b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
       if(b.length<1000000) t+="#import="+encodeURIComponent(b); }catch(e){} }
@@ -652,7 +653,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-180.png">
 <script>
-  window.__PD_BUILD = 'pindu-v11';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
+  window.__PD_BUILD = 'pindu-v12';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       /* 已有控制者时说明本次是新版本接管 → 自动刷新一次，避免长期跑旧缓存

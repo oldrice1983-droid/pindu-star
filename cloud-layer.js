@@ -20,7 +20,7 @@
         var json = decodeURIComponent(escape(window.atob(decodeURIComponent(mImp[1]))));
         var data = JSON.parse(json);
         Object.keys(data).forEach(function (k) {
-          if (k.indexOf("pd_u_") !== 0 && k !== "pd_sys_cur") return;
+          if (k.indexOf("pd_u_") !== 0 && k.indexOf("pd_g_") !== 0 && k !== "pd_sys_cur") return;
           if (data[k] == null) return;
           try { if (raw.getItem(k) === null) raw.setItem(k, data[k]); } catch (e) {}
         });

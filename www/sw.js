@@ -6,7 +6,7 @@
    ⚠️ 镜像站（GitHub Pages 等）承载不了云端账号：云 API 严格匹配官方 Origin，
    在镜像站上登录必然失败。所以 SW 在网络层直接把镜像站导航重定向到官网，
    即使用户装的是镜像站 PWA、页面还缓存着旧版本，也能立刻脱困拿到最新版。 */
-const CACHE = "pindu-v12";  // v12：SW 网络层重定向镜像站→官网（旧缓存 PWA 也能自动脱困）；含 v11 的自动题库性能与界面修复
+const CACHE = "pindu-v12";  // v12：镜像站跳转补齐游客(pd_g_)数据不丢 + 离线时给"重试前往官网"入口；含 v11 全部修复
 const OFFICIAL = "https://pindu-star.app.workbuddy.host/";
 const CORE = ["./", "index.html", "account.js", "cloud-layer.js", "manifest.webmanifest", "icons/icon-180.png"];
 
