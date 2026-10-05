@@ -274,6 +274,8 @@
 
   /* ---------- 启动 ---------- */
   function boot() {
+    /* 本地文件/预览打开（file:// 等）：数据仅存本机、绝不联网，直接进入主界面，不弹云端登录框 */
+    if (location.protocol === "file:" || !location.hostname || location.protocol === "blob:" || location.protocol === "about:") return;
     injectCSS();
     buildMask(); setMode("login");
     errMsg("正在加载账号系统…");

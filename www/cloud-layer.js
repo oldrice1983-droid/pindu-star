@@ -73,14 +73,35 @@
     } catch (e) { console.warn('[cloud] save', e); }
   };
 
-  /* 从云端拉取本账号进度，覆盖本地（云端权威） */
+  /* 从云端拉取本账号进度，覆盖本地（云端权威）。
+     注意：早期版本用 maybeSingle()，一旦同一账号出现多行（如重复写入）会直接报错，
+     导致不加载、下次保存又插入一行，行数越积越多、进度被切碎。这里改用 select('*')
+     取首行，多行时也不会报错（数据库已加 owner_id 唯一索引，正常只会返回 1 行）。 */
   window.__pdCloudLoad = function () {
     var c = window.__cloud;
     if (!c || !window.__cloudReady) return Promise.resolve(null);
-    return c.database.from('user_data').select('*').maybeSingle()
+    return c.database.from('user_data').select('*')
       .then(function (r) {
         if (r.error) { console.warn('[cloud] load', r.error); return null; }
-        var d = r.data; window.__cloudRow = d;
+        var rows = Array.isArray(r.data) ? r.data : (r.data ? [r.data] : []);
+        /* 极端情况下仍出现重复行：合并后保留首行，其余删除，杜绝死循环 */
+        if (rows.length > 1) {
+          var merged = rows[0];
+          try {
+            ['progress', 'plan_store', 'checkin', 'learn_log', 'settings'].forEach(function (k) {
+              rows.forEach(function (row, i) {
+                if (i === 0 || !row[k] || typeof row[k] !== 'object') return;
+                Object.keys(row[k]).forEach(function (kk) {
+                  if (!merged[k] || typeof merged[k] !== 'object') merged[k] = {};
+                  if (merged[k][kk] !== 'k') merged[k][kk] = row[k][kk];
+                });
+              });
+            });
+            var delIds = rows.slice(1).map(function (x) { return x.id; });
+            c.database.from('user_data').delete().in('id', delIds);
+          } catch (e) { console.warn('[cloud] dedupe', e); }
+        }
+        var d = rows[0] || null; window.__cloudRow = d;
         if (d) {
           if (d.progress && typeof d.progress === 'object') progress = d.progress;
           if (d.plan_store && typeof d.plan_store === 'object') planStore = d.plan_store;
