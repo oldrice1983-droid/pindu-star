@@ -688,6 +688,24 @@
   .train-input:focus{border-color:var(--green-d);box-shadow:0 0 0 2px rgba(33,150,95,.15)}
   .train-card{margin-top:4px}
   @media(max-width:520px){ .train-bar .btn{padding:8px 12px;font-size:13px} }
+/* ===== 拼读规则总表（拼读训练页） ===== */
+.pt-rt{margin-top:14px;background:#fff;border:1px solid #dce8e2;border-radius:14px;padding:12px 14px}
+.pr-head{font-weight:800;font-size:15px;color:#1d5c46;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pr-legend{font-size:11.5px;font-weight:700;color:#fff;background:#ef6c00;border-radius:10px;padding:2px 10px}
+.pr-chip{display:inline-block;background:#eef7f3;border:1px solid #cfe3da;color:#1d5c46;border-radius:10px;padding:2px 10px;font-size:12px;margin:3px 6px 3px 0}
+.pr-g{margin-top:6px;border-top:1px dashed #dce8e2}
+.pr-g summary{cursor:pointer;font-weight:700;font-size:13.5px;color:#2c6e57;padding:9px 2px}
+.pr-row{display:flex;align-items:baseline;gap:8px;padding:5px 8px;border-radius:6px;font-size:12.5px;line-height:1.55;flex-wrap:wrap}
+.pr-row+.pr-row{border-top:1px solid #f0f4f2}
+.pr-k{min-width:58px;font-weight:800;color:#1d5c46;background:#eef7f3;border-radius:6px;padding:1px 8px;text-align:center}
+.pr-kw{min-width:0}
+.pr-t{color:#7a8b84;font-size:11px;white-space:nowrap}
+.pr-b b{color:#23433a;margin-right:6px}
+.pr-b i{color:#5f7269;font-style:normal}
+.pr-ex{color:#8a978f;font-size:11.5px}
+.pr-hit{background:#fff3e0;box-shadow:inset 3px 0 0 #ef6c00}
+.pr-hit .pr-k{background:#ef6c00;color:#fff}
+.pr-badge{margin-left:auto;color:#ef6c00;font-weight:800;font-size:11.5px;white-space:nowrap}
 </style>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -698,7 +716,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-180.png">
 <script>
-  window.__PD_BUILD = 'pindu-v16';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
+  window.__PD_BUILD = 'pindu-v17';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       /* 已有控制者时说明本次是新版本接管 → 自动刷新一次，避免长期跑旧缓存
@@ -12781,14 +12799,35 @@ function updateHeader(){
 /* ================= 元音 / 元音组合悬停提示（显示全部发音 + 规则） ================= */
 const vtip=document.getElementById("vTip");
 const VKEYS=Object.keys(VOWELS).sort((a,b)=>b.length-a.length);
-/* 从一个字母串里找出元音或元音组合（按最长匹配） */
+/* 元音类条目键集合：t 含「元音/魔法/r 音节」+ 少数元音性特殊组合（tion/ough/al）。
+   VOWELS 表里还混有辅音字母/辅音组合/辅音连缀等条目，必须排除，否则 c、t 等会被误判成元音 */
+const PT_VOWEL_EXTRA_KEYS=["tion","ough","al"];
+const VOWEL_KEY_SET=new Set(Object.keys(VOWELS).filter(k=>{
+  const t=VOWELS[k].t||"";
+  return /元音|魔法|r 音节/.test(t)||PT_VOWEL_EXTRA_KEYS.includes(k);
+}));
+const CONS_KEY_SET=new Set(Object.keys(VOWELS).filter(k=>!VOWEL_KEY_SET.has(k)));
+/* 从一个字母串里找出元音或元音组合（按最长匹配，只查元音类条目） */
 function vowelKeyIn(letters){
   const s=letters.toLowerCase();
   for(let len=Math.min(3,s.length); len>=1; len--)
     for(let i=0;i+len<=s.length;i++){
       const sub=s.slice(i,i+len);
-      if(VOWELS[sub]) return sub;
+      if(VOWEL_KEY_SET.has(sub)) return sub;
     }
+  return null;
+}
+/* 从一个字母串里找出辅音字母 / 辅音组合 / 辅音连缀（先整块匹配，再最长子串，再单字母） */
+function consonantKeyIn(letters){
+  const s=letters.toLowerCase().replace(/[^a-z]/g,"");
+  if(!s) return null;
+  if(CONS_KEY_SET.has(s)) return s;
+  for(let len=Math.min(4,s.length); len>=2; len--)
+    for(let i=0;i+len<=s.length;i++){
+      const sub=s.slice(i,i+len);
+      if(CONS_KEY_SET.has(sub)) return sub;
+    }
+  for(let i=0;i<s.length;i++){ if(CONS_KEY_SET.has(s[i])) return s[i]; }
   return null;
 }
 /* 判断一个音块对应哪个元音条目（返回 null 表示该块不含元音 / 元音不发音） */
@@ -12836,9 +12875,6 @@ let tipWord="", tipHideT=null;
 document.addEventListener("mouseover",e=>{
   /* 鼠标在气泡上：保持显示，让用户能点到按钮 */
   if(e.target.closest("#tip")){ clearTimeout(tipHideT); return; }
-  const vEl=e.target.closest("[data-v]");
-  if(vEl){ showVTip(vEl.dataset.v, vEl); hideTip(); return; }
-  if(!e.target.closest("[data-v]")) hideVTip();
   const el=e.target.closest(".lw");
   if(!el){ if(tip.style.display==="block") armTipHide(); else hideTip(); return; }
   const w=el.dataset.w.toLowerCase();
@@ -13389,12 +13425,11 @@ function phonicsTrainHTML(wd, inWordPage){
     shownStress.forEach(id=>seen.add("srule:"+id));                              // 上方重音盒已展示的重音规则 → 不重复
   }
 
-  /* 通用：按 chunk 把单词的元音（组合）高亮显示（带 data-v，悬停即看元音规则） */
+  /* 通用：按 chunk 把单词的元音（组合）高亮显示（绿色标记，全部规则见下方规则总表） */
   const wordHtml = (wd.chunks||[]).map(c=>{
     const k=vowelOfChunk(c,wd);
     const cls = k? "pt-ch pt-v":"pt-ch";
-    const dv = k? ` data-v="${k}"`:"";
-    return `<span class="${cls}"${dv}>${c[0]}</span>`;
+    return `<span class="${cls}">${c[0]}</span>`;
   }).join('<span class="pt-plus">·</span>');
 
   /* ---- Step 1 找元音（组合） ---- */
@@ -13408,7 +13443,7 @@ function phonicsTrainHTML(wd, inWordPage){
   const step1=`<details class="pt-step"><summary><span class="pt-num">1</span> 找元音（组合）<span class="pt-task">把单词里的元音字母 / 元音组合圈出来</span></summary>
     <div class="pt-step-b">
       <div class="pt-word">${wordHtml}</div>
-      <p class="pt-hint">单词「<b>${wd.w}</b>」里的元音组合已用绿色标出，鼠标悬停可看每个元音的全部读法。逐条给出对应拼读规则：</p>
+      <p class="pt-hint">单词「<b>${wd.w}</b>」里的元音组合已用绿色标出。${inWordPage?"逐条给出对应拼读规则：":`本词相关的元音、辅音、重音全部规则见下方「📐 拼读规则总表」，<b style="color:#ef6c00">橙色</b> = 本词直接适用：`}</p>
       ${vRules||'<p class="pt-hint">（本词由辅音+单元音构成，无独立元音组合规则）</p>'}
     </div></details>`;
 
@@ -13483,6 +13518,7 @@ function phonicsTrainHTML(wd, inWordPage){
   return `<div class="sec ptrain"><h3>🧭 拼读训练 · 5 步拆解「${wd.w}」 <button class="pt-toggle" onclick="ptToggleAll(this)">展开全部</button></h3>
     <p class="pt-sub">跟着 5 步自己拆：① 找元音组合 → ② 切分音节 → ③ 找重音 → ④ 看每个音怎么发 → ⑤ 整体读。每步默认折叠，重复的规则只展示一次。</p>
     ${step1}${step2}${step3}${step4}${step5}
+    ${inWordPage?"":ptRulesTableHTML(wd)}
   </div>`;
 }
 function ptToggleAll(btn){
@@ -13490,6 +13526,35 @@ function ptToggleAll(btn){
   const open = btn.textContent.trim()==="展开全部";
   root.querySelectorAll("details.pt-step").forEach(d=>{ d.open=open; });
   btn.textContent = open? "收起全部":"展开全部";
+}
+/* ===== 拼读规则总表：元音 / 辅音 / 重音全部规则一屏展示，本词直接适用的用橙色高亮 ===== */
+function ptRulesTableHTML(wd){
+  const hitV=new Set(), hitC=new Set();
+  (wd.chunks||[]).forEach(c=>{
+    const vk=vowelOfChunk(c,wd);
+    if(vk){ hitV.add(vk); return; }                       // 元音块不再找辅音规则
+    const ck=consonantKeyIn(c[0]); if(ck) hitC.add(ck);
+  });
+  const hitS=new Set(wordStressRules(wd).map(r=>r.id));
+  const entryRow=(k,d,hit)=>`<div class="pr-row${hit?" pr-hit":""}"><span class="pr-k">${k.replace(/_/g,"·")}</span><span class="pr-t">${d.t}</span><span class="pr-b"><b>${d.sounds[0][0]}</b><i>${d.sounds[0][1]}</i></span>${hit?'<span class="pr-badge">✔ 本词适用</span>':""}</div>`;
+  const vKeys=Object.keys(VOWELS).filter(k=>VOWEL_KEY_SET.has(k));
+  const cKeys=Object.keys(VOWELS).filter(k=>!VOWEL_KEY_SET.has(k));
+  const vRows=vKeys.map(k=>entryRow(k,VOWELS[k],hitV.has(k))).join("");
+  const cRows=cKeys.map(k=>entryRow(k,VOWELS[k],hitC.has(k))).join("");
+  const sRows=STRESS_RULES.map(r=>{const hit=hitS.has(r.id);
+    return `<div class="pr-row${hit?" pr-hit":""}"><span class="pr-k pr-kw">${r.n.split("：")[0]}</span><span class="pr-b"><i>${r.d}</i></span><span class="pr-ex">例：${r.ex}</span>${hit?'<span class="pr-badge">✔ 本词适用</span>':""}</div>`;}).join("");
+  const chips=[
+    ...[...hitV].map(k=>`元音 ${k.replace(/_/g,"·")}`),
+    ...[...hitC].map(k=>`辅音 ${k}`),
+    ...[...hitS].map(id=>{const r=STRESS_RULES.find(x=>x.id===id);return r?r.n.split("：")[0]:id;})
+  ].map(t=>`<span class="pr-chip">${t}</span>`).join("");
+  return `<div class="pt-rt">
+    <div class="pr-head">📐 拼读规则总表<span class="pr-legend">橙底 = 本词直接适用</span></div>
+    <p class="pt-hint">本词直接用到的规则：${chips||"—"}</p>
+    <details class="pr-g" open><summary>🔤 元音字母 · 元音组合规则（${vKeys.length} 条）</summary><div class="pr-list">${vRows}</div></details>
+    <details class="pr-g" open><summary>🧱 辅音字母 · 辅音组合 · 连缀规则（${cKeys.length} 条）</summary><div class="pr-list">${cRows}</div></details>
+    <details class="pr-g" open><summary>🔺 重音认定规则（${STRESS_RULES.length} 条）</summary><div class="pr-list">${sRows}</div></details>
+  </div>`;
 }
 /* ===== 拼读训练 tab：独立的拼读训练台（复用 5 步拼读训练模块 phonicsTrainHTML，与单词学习模块互不耦合） ===== */
 let trainList = WORDS.filter(w=>w.syl && w.chunks && w.chunks.length);
@@ -13631,8 +13696,7 @@ function chunkHeroHTML(wd){
     const vk=vowelOfChunk(c, wd);
     return `${i>0?'<span class="plus">+</span>':''}
      <span class="chunk${vk?' vmark':''}" id="chunk-${i}" style="color:${CHUNK_COLORS[i%CHUNK_COLORS.length]}"
-        ${vk?`data-v="${vk}"`:''}
-        title="点击听这个音：${c[1]}${vk?`　｜　鼠标悬停查看「${vk}」的全部发音`:''}"
+        title="点击听这个音：${c[1]}"
         onclick="speakChunk('${c[2].replace(/'/g,"")}',0.9)">
        <span class="lt">${c[0]}</span>
        <span class="ip">${c[1]}</span>
