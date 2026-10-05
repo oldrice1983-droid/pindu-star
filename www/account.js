@@ -24,6 +24,8 @@
     ".pd-row label{display:block;font-size:12px;color:#5a6b62;margin-bottom:4px}" +
     ".pd-input{width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #d8e3dd;border-radius:10px;font-size:15px;outline:none}" +
     ".pd-input:focus{border-color:#2f9e6e}" +
+    ".pd-rem{display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-size:13px;color:#5a6b62;cursor:pointer;-webkit-user-select:none;user-select:none}" +
+    ".pd-rem input{width:17px;height:17px;accent-color:#2f9e6e;cursor:pointer;flex:none;margin:0}" +
     ".pd-otpwrap{display:flex;gap:8px;align-items:stretch}" +
     ".pd-otpwrap .pd-input{flex:1;min-width:0}" +
     ".pd-codebtn{flex:none;width:114px;border:1.5px solid #2f9e6e;background:#eaf6f0;color:#1f6e4d;" +
@@ -68,6 +70,7 @@
         '<div class="pd-row"><label>邮箱</label><input id="pdEmail" class="pd-input" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email"></div>' +
         '<div class="pd-row"><label>密码 <span id="pdPwTip" style="color:#9aa8a0"></span></label>' +
           '<input id="pdPw" class="pd-input" type="password" placeholder="至少 6 位" autocomplete="current-password"></div>' +
+        '<label class="pd-rem"><input id="pdRemember" type="checkbox">一个月内本机不再重复登录</label>' +
         '<div class="pd-row" id="pdOtpRow">' +
           '<label>邮箱验证码</label>' +
           '<div class="pd-otpwrap">' +
@@ -211,10 +214,26 @@
 
   function loginOK(email) {
     if (!validEmail(email)) { errMsg("登录信息异常，请重新登录"); return; }
+    /* 「一个月内本机免登录」：勾选才记；自动登录进来的顺延 30 天 */
+    var cb = $("pdRemember");
+    if (cb) { if (cb.checked) saveRemember(email); else clearRemember(); }
+    else if (readRemember()) saveRemember(email);
     var m = $("pdMask"); if (m) m.parentNode.removeChild(m);
     showBar(email);
     if (window.__pdOnLogin) window.__pdOnLogin(email);
   }
+
+  /* ---------- 一个月内本机免登录 ---------- */
+  var REMKEY = "pd_sys_remember", REM_DAYS = 30;
+  function rawGet(k) { try { return window.__pdRaw ? window.__pdRaw.getItem(k) : null; } catch (e) { return null; } }
+  function rawSet(k, v) { try { if (window.__pdRaw) window.__pdRaw.setItem(k, v); } catch (e) {} }
+  function readRemember() {
+    var s = rawGet(REMKEY); if (!s) return null;
+    try { var o = JSON.parse(s); if (o && o.e && validEmail(o.e) && o.exp > Date.now()) return o; } catch (e) {}
+    return null;
+  }
+  function saveRemember(email) { rawSet(REMKEY, JSON.stringify({ e: email, exp: Date.now() + REM_DAYS * 86400000 })); }
+  function clearRemember() { try { if (window.__pdRaw) window.__pdRaw.removeItem(REMKEY); } catch (e) {} }
 
   /* ---------- 登录后右上角账号条 ---------- */
   function showBar(email) {
@@ -234,6 +253,7 @@
     $("pdLogoutBtn").onclick = function () {
       var c = ensureCloud();
       if (c && c.auth.signOut) c.auth.signOut().catch(function () {});
+      clearRemember();                       // 退出登录即取消免登录
       if (window.__pdOnLogout) window.__pdOnLogout();
       if (bar.parentNode) bar.parentNode.removeChild(bar);
       buildMask(); setMode("login");
@@ -277,10 +297,14 @@
     /* 本地文件/预览打开（file:// 等）：数据仅存本机、绝不联网，直接进入主界面，不弹云端登录框 */
     if (location.protocol === "file:" || !location.hostname || location.protocol === "blob:" || location.protocol === "about:") return;
     injectCSS();
-    buildMask(); setMode("login");
-    errMsg("正在加载账号系统…");
+    var remembered = readRemember();
+    if (!remembered) { buildMask(); setMode("login"); errMsg("正在加载账号系统…"); }
 
     var t0 = Date.now(), waited = false;
+    function showLoginMask() {
+      if (!$("pdMask")) { buildMask(); setMode("login"); }
+      errMsg("请输入邮箱和密码登录（免登录已过期）");
+    }
     function ready() {
       var c = ensureCloud();
       if (!c) {
@@ -289,7 +313,7 @@
           window.__pdSDKReady.then(function () { setTimeout(ready, 0); });
           return;
         }
-        errMsg("账号系统需联网加载（当前以本机模式运行，数据暂存本机）。请检查网络后刷新重试。");
+        if (!remembered) errMsg("账号系统需联网加载（当前以本机模式运行，数据暂存本机）。请检查网络后刷新重试。");
         return;
       }
       c.auth.getSession().then(function (s) {
@@ -299,10 +323,13 @@
           var m = $("pdMask"); if (m) m.parentNode.removeChild(m);
           showBar(mail);
           if (window.__pdOnLogin) window.__pdOnLogin(mail);
+        } else if (remembered) {
+          /* 勾选过免登录但云端会话已失效：自动用记住的邮箱再登录一次不行（需密码），回登录框 */
+          clearRemember(); showLoginMask();
         } else {
           setMode("login");
         }
-      }).catch(function () { setMode("login"); });
+      }).catch(function () { if (remembered) { clearRemember(); showLoginMask(); } else setMode("login"); });
     }
     ready();
   }
