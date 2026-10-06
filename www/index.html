@@ -779,6 +779,11 @@
   .ptq-q{font-size:13.5px;line-height:1.75;color:#2c5747;margin-bottom:8px}
   .ptq-q code{background:#eef7f3;border-radius:4px;padding:0 4px}
   .ptq-in{width:100%;padding:8px 10px;border:1px solid #d6e3dd;border-radius:10px;font-size:14px;outline:none;background:#fff;color:#22332b;margin-bottom:8px}
+  .ptq-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+  .ptq-chip{border:1.5px solid #d6e3dd;background:#fff;border-radius:9px;padding:8px 13px;font-size:15px;cursor:pointer;font-family:inherit;color:var(--ink);min-width:40px;text-align:center;line-height:1.1}
+  .ptq-chip.ptq-v{background:#eef7f3;border-color:#bfe0d2;color:var(--green-d);font-weight:700}
+  .ptq-chip.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:700}
+  .ptq-chip:active{transform:scale(.96)}
   .ptq-opts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
   .ptq-opt{border:1.5px solid #d6e3dd;background:#fff;border-radius:10px;padding:6px 15px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--sub)}
   .ptq-opt.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:700}
@@ -822,7 +827,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-180.png">
 <script>
-  window.__PD_BUILD = 'pindu-v29';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
+  window.__PD_BUILD = 'pindu-v30';   /* 界面版本标记：登录卡片底部会显示，方便确认是否最新 */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       /* 已有控制者时说明本次是新版本接管 → 自动刷新一次，避免长期跑旧缓存
@@ -13623,7 +13628,7 @@ const STRESS_RULES=[
   ex:"reˈquire · reˈmem·ber · im·ˈmi·grant · eˈstab·lish · reˈspond"},
  {id:"ion", n:"⑤ -tion / -sion / -ic / -ity / -ial 的前一音节重读",
   d:"这些后缀像磁铁，把重音吸引到紧挨着它们的前一个音节上。",
-  ex:"inforˈma·tion · geneˈra·tion · eˈco·no·my · scienˈtif·ic"},
+  ex:"inforˈma·tion · geneˈra·tion · scienˈtif·ic"},
  {id:"auto", n:"⑥ -ee / -eer / -ese / -ique 自身重读",
   d:"这类后缀自带重音，重音就落在后缀本身。",
   ex:"emploˈyee 雇员 · engiˈneer 工程师 · Japaˈnese 日本的 · uˈnique 独特的"},
@@ -13632,7 +13637,7 @@ const STRESS_RULES=[
   ex:"ˈtea·cher · ˈquick·ly · ˈhap·pi·ness · ˈgar·den·er"},
  {id:"three-ante", n:"⑧ 三音节及以上：重音在倒数第 3 音节",
   d:"「倒数第三音节规则」（antepenultimate rule）：音节数 ≥ 3 时，重音通常落在倒数第 3 个音节上。",
-  ex:"ˈben·e·fit · sigˈnif·i·cant · comˈmu·ni·ty · ˈpol·i·cy · u·niˈver·si·ty"},
+  ex:"ˈben·e·fit · sigˈnif·i·cant · comˈmu·ni·ty · ˈpol·i·cy · u·niˈver·si·ty · eˈco·no·my"},
  {id:"secondary", n:"⑨ 次重音：长词的「第二重音」",
   d:"4 音节以上的词除主重音（ˈ）外还有次重音（ˌ）：次重音通常落在主重音往前隔一个音节处，或落在词首。次重音的音节仍然读强式元音，不弱化。",
   ex:"ˌop·porˈtu·ni·ty · ˌin·diˈvid·u·al · ˌu·niˈver·si·ty · ˌin·forˈma·tion · ˌgen·eˈra·tion"},
@@ -14069,7 +14074,7 @@ const RULE_QUIZ_BANK=[
 {t:"pos",d:2,q:"次重音用什么符号标记？",o:["ˌ（低撇）","ˈ（高撇）","`","¨"],a:0,w:"<b>ˈ = 主重音</b>（在前上方），<b>ˌ = 次重音</b>（在下前方）。如 ˌin·forˈma·tion：次重音 in，主重音 ma。"},
 {t:"pos",sw:"record",d:2,q:"下列哪组词存在<b>名/动重音位移</b>？",o:["ˈrecord（名）— reˈcord（动）","ˈta·ble — ˈwa·ter","ˈtea·cher — ˈgar·den·er","ˈclass·room — ˈhome·work"],a:0,w:"重音位移成对出现：ˈrecord/reˈcord、ˈpresent/preˈsent、ˈobject/obˈject、ˈincrease/inˈcrease。名词形容前、动词在后。"},
 {t:"pos",d:1,q:"判断一个词的重音位置，正确步骤是？",o:["先找后缀/词尾 → 再看前缀 → 最后数音节套倒数第三规则","先数字母数","先看词性","随机猜"],a:0,w:"优先级：<b>① 特殊后缀（-tion/-ic/-ity/-ee）→ ② 前缀不重读 → ③ 名/动区分 → ④ 倒数第三音节</b>。按这个顺序命中率最高。"},
-{t:"pos",d:2,q:"<b>ˈeconomy</b>（e·co·no·my，4 音节）的重音在第 2 音节，最符合哪条规则？",o:["倒数第 3 音节规则","-y 后缀自带重音","前缀重读","复合词规则"],a:0,w:"4 音节词：倒数第 3 = 第 2 音节 → eˈco·no·my。-y / -ic / -tion 都是「前一音节重读」类后缀，与倒数第三常常指向同一个音节。"},
+{t:"pos",d:2,q:"<b>ˈeconomy</b>（e·co·no·my，4 音节）的重音在第 2 音节，最符合哪条规则？",o:["倒数第 3 音节规则","-y 后缀自带重音","前缀重读","复合词规则"],a:0,w:"e·co·no·my 是 4 音节词，重音落在第 2 音节 = 倒数第 3 音节，符合「⑧ 倒数第 3 音节规则」。词尾 -my 只是普通结尾，并不是 -ee/-eer 那样自带重音的后缀；本词也不含前缀或复合结构，所以选 ⑧ 最准确。"},
 
 /* ---------- 整体发音 ---------- */
 {t:"whole",sw:"book",d:2,q:"下列哪个词的<b>元音发音</b>与其他三个不同？",o:["book（/ʊ/）","food（/uː/）","moon（/uː/）","school（/uː/）"],a:0,w:"food · moon · school 的 oo 都是长音 /uː/，只有 <b>book</b> 是短音 /ʊ/。这类「找不同」题能训练你对元音长短的敏感度。"},
@@ -17092,10 +17097,14 @@ function ptQuizHTML(wd,step,inWordPage){
       <button class="ptq-say" type="button" onclick="say('${w.replace(/'/g,"")}',0.5)">🔊 慢速</button>
       <span class="ptq-wipa">${wd.ip||""}</span></div>`;
   if(step===1){
-    return `<div class="pt-quiz">
+    const chips=(wd.chunks||[]).map((c,i)=>{
+      const k=vowelOfChunk(c,wd);
+      return `<button type="button" class="ptq-chip${k?' ptq-v':''}" data-i="${i}" onclick="ptPickV('${w}',${i},this)">${c[0]}</button>`;
+    }).join("");
+    return `<div class="pt-quiz" id="ptqd-${w}-1">
       ${head}
-      <div class="ptq-q">✍️ <b>先自己找一找</b>：<b>${w}</b> 里有哪几个<b>元音 / 元音组合</b>？（多个用空格或逗号隔开，如 <code>a</code> 或 <code>ea, e</code>）</div>
-      <input class="ptq-in" id="ptqi-${w}" placeholder="输入元音字母或组合" />
+      <div class="ptq-q">👇 <b>点一点</b>：在 <b>${w}</b> 里，把你认为含<b>元音 / 元音组合</b>的字母块选出来（点错可再点取消）</div>
+      <div class="ptq-chips">${chips}</div>
       <button class="btn btn-main" id="ptqbtn-${w}-1" onclick="ptSubmit('${w}',1)">提交并查看</button>
       <a class="ptq-skip" href="javascript:void(0)" onclick="ptReveal('${w}',1)">直接看答案</a>
       <div class="ptq-fb" id="ptqfb-${w}-1"></div>
@@ -17103,12 +17112,12 @@ function ptQuizHTML(wd,step,inWordPage){
   }
   if(step===2){
     if(!ptCutsOf(wd).length)                   /* 单音节词无需切分：给出说明并直接展示答案 */
-      return `<div class="pt-quiz"><div class="ptq-q">✍️ <b>${w}</b> 是<b>单音节词</b>，只有一个音节，不需要切分 → 展开下面核对一下。</div></div>`;
+      return `<div class="pt-quiz" id="ptqd-${w}-2"><div class="ptq-q">✍️ <b>${w}</b> 是<b>单音节词</b>，只有一个音节，不需要切分 → 展开下面核对一下。</div></div>`;
     const letters=w.split("");
     const cells=letters.map((c,i)=>
       `${i>0?`<span class="ptq-gap" data-i="${i}" onclick="ptSlash('${w}',${i},this)" title="点这里加一个 /"></span>`:""}`+
       `<span class="ptq-ltr">${c}</span>`).join("");
-    return `<div class="pt-quiz">
+    return `<div class="pt-quiz" id="ptqd-${w}-2">
       ${head}
       <div class="ptq-q">✍️ <b>自己动手切</b>：点字母之间的空隙插入「/」，把 <b>${w}</b> 切成音节</div>
       <div class="ptq-split" id="ptqsl-${w}">${cells}</div>
@@ -17120,7 +17129,7 @@ function ptQuizHTML(wd,step,inWordPage){
   }
   if(step===3){
     const n=wd.syl?wd.syl.length:1;
-    return `<div class="pt-quiz">
+    return `<div class="pt-quiz" id="ptqd-${w}-3">
       ${head}
       <div class="ptq-q">✍️ 你觉得<b>主重音</b>落在第几个音节？（可先按自己的切分数一数）${wd.stress2>=0?"（本词还有次重音）":""}</div>
       <div class="ptq-opts">${Array.from({length:n},(_,i)=>`<button class="ptq-opt" onclick="ptChoose('${w}',3,${i+1},this)">第 ${i+1} 个</button>`).join("")}</div>
@@ -17132,7 +17141,7 @@ function ptQuizHTML(wd,step,inWordPage){
   if(step===4){
     const vks=ptStep4Items(wd);
     if(!vks.length) return "";
-    return `<div class="pt-quiz">
+    return `<div class="pt-quiz" id="ptqd-${w}-4">
       ${head}
       <div class="ptq-q">✍️ 结合重音位置判断：每个元音（组合）在<b>本词里</b>读哪个音？<span class="ptq-tip">直接点下面的音</span></div>
       ${vks.map(x=>{
@@ -17151,18 +17160,26 @@ function ptQuizHTML(wd,step,inWordPage){
 }
 function ptReveal(w,s){
   const b=document.getElementById("ptb-"+w+"-"+s); if(b) b.style.display="block";
+  const q=document.getElementById("ptqd-"+w+"-"+s); if(q) q.style.display="none";  /* 题做完后隐藏自测题，只留正确解读 */
   const btn=document.getElementById("ptqbtn-"+w+"-"+s); if(btn) btn.style.display="none";
+}
+function ptPickV(w,i,btn){
+  PTQ[w]=PTQ[w]||{};
+  PTQ[w][1]=PTQ[w][1]||[];
+  const arr=PTQ[w][1];
+  const idx=arr.indexOf(i);
+  if(idx>=0) arr.splice(idx,1); else arr.push(i);
+  btn.classList.toggle("on");
 }
 function ptSubmit(w,s){
   const wd=WORDS.find(x=>x.w===w); if(!wd) return;
   let ok=false, correct="", answered=true;
   if(s===1){
-    const inp=document.getElementById("ptqi-"+w);
-    const got=String(inp?inp.value:"").toLowerCase().split(/[^a-z_]+/).filter(Boolean);
-    const exp=[...new Set((wd.chunks||[]).map(c=>vowelOfChunk(c,wd)).filter(Boolean))];
-    answered=!!got.length;
-    ok = answered && [...new Set(got)].sort().join(",")===exp.slice().sort().join(",");
-    correct=exp.join(" · ")||"（无元音组合）";
+    const picked=new Set((PTQ[w]||{})[1]||[]);
+    const expSet=new Set((wd.chunks||[]).map((c,i)=>vowelOfChunk(c,wd)?i:-1).filter(i=>i>=0));
+    answered=picked.size>0;
+    ok = answered && picked.size===expSet.size && [...picked].every(i=>expSet.has(i));
+    correct=(wd.chunks||[]).filter((_,i)=>expSet.has(i)).map(c=>c[0]).join(" · ")||"（无元音组合）";
   }else if(s===2){
     const expCuts=ptCutsOf(wd);
     const got=[...(PTSP[w]||[])].sort((a,b)=>a-b);
@@ -17192,7 +17209,7 @@ function ptSubmit(w,s){
   if(fb) fb.innerHTML = ok
     ? `<span class="ptq-ok">✅ 答对了！${correct}</span>`
     : (answered? `<span class="ptq-no">❌ 再对照一下 —— 正确答案：${correct}</span>` : `<span class="ptq-no">请先作答，或直接看答案。正确答案：${correct}</span>`);
-  ptReveal(w,s);
+  if(answered) ptReveal(w,s);   /* 只有作答过（对或错）才隐藏题目；空提交保留题目并提示 */
 }
 /* 步骤③ 用：本词适用重音规则 */
 function ptStressRowsFrag(wd){
